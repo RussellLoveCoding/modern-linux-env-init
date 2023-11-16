@@ -1,0 +1,329 @@
+{
+    // terminal
+    // "terminal.integrated.shell.linux": "/usr/local/bin/zsh",
+
+    // apperance
+    // "editor.fontSize": 13,
+    // "debug.console.fontSize": 15,
+    // "workbench.sideBar.location": "left",
+    // "workbench.iconTheme": "vscode-icons",
+    // "vim.vimrc.enable": true,
+    // 这里配置不出来
+    // "vim.vimrc.path": "/Users/mochuxuan/vscode_vimrc/_vimrc",
+    //setting sync plugin
+    "zenMode.hideStatusBar": false,
+    "zenMode.silentNotifications": false,
+    
+    "remote.SSH.configFile": "C:\\Users\\18566\\.ssh\\config",
+    "remote.SSH.remotePlatform": {
+        "do-sgp-hp": "linux",
+        "gcp-hk-hp": "linux"
+    },
+
+    // display
+    "workbench.colorTheme": "GitHub Dark",
+
+    // github copilot
+    "github.copilot.advanced": {
+        "debug.overrideChatEngine": "gpt-4"
+    },
+
+    // editor
+    "pangu.auto_format_on_save": true,
+    "autocorrect.formatOnSave": false,
+    "editor.detectIndentation": false,
+    "zenMode.hideLineNumbers": false,
+    "workbench.preferredDarkColorTheme": "Gruvbox Material Dark",
+    "editor.overviewRulerBorder": false,
+    "editor.minimap.enabled": false,
+    "terminal.integrated.fontFamily": "'FiraCode Nerd Font','Source Han Sans SC VF'",
+    // "editor.fontFamily": "Fira Code,Source Han Sans SC VF",//.
+    // "editor.fontFamily":  "'Fira Code','Microsoft Yahei','Microsoft YaHei', 'Source Han Sans CN'", //
+    "editor.fontSize": 13,
+    // "editor.fontFamily":  "'Fira Code','Source Han Sans SC VF'", //
+    "editor.fontFamily":  "'FiraCode Nerd Font','Source Han Sans SC VF'", //
+    // "editor.fontFamily":  "'Fira Code','Microsoft YaHei Mono'", //
+    // "editor.fontFamily":  "'Fira Code','M+ 1m'", //
+    // "editor.fontFamily":  "'Fira Code','Microsoft Yahei'", //
+    "editor.fontLigatures": true,
+    "telemetry.enableTelemetry": false,
+    //editor 
+    // The number of spaces a tab is equal to. This setting is overridden
+    //based on the file contents when `editor.detectIndentation` is true.
+    "editor.tabSize": 4,
+    // Insert spaces when pressing Tab. This setting is overriden
+    //based on the file contents when `editor.detectIndentation` is true.
+    "editor.insertSpaces": true, 
+    // 这个 pangu 插件会将注释标记和后面文本间的空格去掉，要不得
+    "pangu.auto_space_on_save_ext": [ 
+        "*"
+    ], // pangu on every filetype
+
+    //rewrap setting
+    // "rewrap.wrappingColumn": 80,
+    
+
+    "editor.accessibilitySupport": "on",
+
+    // integrate vim
+    "vim.vimrc.enable": true,
+    "vim.vimrc.path": "$HOME/.vimrc",
+    "vim.textwidth": 80,
+    "vim.leader": ";",
+    "vim.easymotion": true,
+
+    "vim.neovimConfigPath": "$HOME/.config/nvim/init.vim",
+    "rewrap.wholeComment": true,
+    "rewrap.doubleSentenceSpacing": true, // 不懂
+    "rewrap.autoWrap.enabled": true,
+    "vim.neovimUseConfigFile": true,
+    "vim.enableNeovim": true,
+    "vim.neovimPath": "/usr/bin/nvim",
+    "vscode-neovim.mouseSelectionStartVisualMode": true,
+    "sqltools.historySize": 10,
+    "vscode-neovim.highlightGroups.highlights": {
+        "Directory": "vim",
+        "IncSearch": {
+            "backgroundColor": "theme.editor.findMatchBackground",
+            "borderColor": "theme.editor.findMatchBorder"
+        },
+        "Search": {
+            "backgroundColor": "theme.editor.findMatchHighlightBackground",
+            "borderColor": "theme.editor.findMatchHighlightBorder"
+        },
+        "Visual": {
+            "backgroundColor": "theme.editor.selectionBackground"
+        },
+        "Conceal": "vim",
+        "Substitute": "vim"
+        // "QuickScopeSecondary":"vim",
+    },
+    "vscode-neovim.textDecorationsAtTop": true,
+    "editor.rulers": [
+        80,
+        100
+    ],
+
+    //markdown
+    "[markdown]": {
+        // 快速补全
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": true,
+            "strings": true
+        },
+        "rewrap.reformat": true,
+    },
+    "markdown-preview-enhanced.enableCriticMarkupSyntax": true,
+    "markdown-preview-enhanced.enableExtendedTableSyntax": true,
+    "markdown-preview-enhanced.breakOnSingleNewLine": false,
+    "markdown-preview-enhanced.previewTheme": "github-light.css",
+    "markdown-preview-enhanced.enableTypographer": true,
+    "markdown-preview-enhanced.Domain": "http://mpe",
+    "markdown.preview.typographer": true,
+    "markdown-preview-enhanced.mathRenderingOption": "MathJax",
+    "editor.bracketPairColorization.enabled": true,
+    "pasteImage.basePath": "${projectRoot}",
+    "pasteImage.path": "${projectRoot}/assets",
+    "mermaid.vscode.dark": "default",
+
+    //programming language specific
+    //sqltools
+    "sqltools.connections": [
+        ////online
+        //netdisk-share
+        {
+            "connectionTimeout": 60,
+            "database": "netdisk_share",
+            "driver": "MySQL",
+            "group": "online",
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "name": "netdisk-share-online",
+            "password": "1pX_q69VN54mI7NduRgB1oUqH5tp4C3",
+            "port": 3346,
+            "previewLimit": 50,
+            "server": "netdiskdb0000-offline.xdb.all.serv",
+            "username": "mochuxuan"
+        },
+        //netdisk-user
+        {
+            "connectionTimeout": 60,
+            "database": "is_chunlei_netdisk",
+            "driver": "MySQL",
+            "group": "online",
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "name": "netdisk-user-online",
+            "password": "0hX_k1XrwX2Gm7BhbU",
+            "port": 7009,
+            "previewLimit": 50,
+            "server": "10.169.40.231",
+            "username": "mochuxuan"
+        },
+        //offline
+        // 业务开发库
+        {
+            "connectionTimeout": 60,
+            "database": "netdisk_share",
+            "driver": "MySQL",
+            "group": "offline",
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "name": "netdisk-share-offline",
+            "password": "MhxzKhl",
+            "port": 4444,
+            "previewLimit": 50,
+            "server": "10.99.41.60",
+            "username": "chunlei"
+        },
+        {
+            "connectionTimeout": 60,
+            "database": "my_netdisk",
+            "driver": "MySQL",
+            "group": "localhost",
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "name": "netdisk-user-localhost",
+            "password": "Bae@111111",
+            "port": 3306,
+            "previewLimit": 50,
+            "server": "localhost",
+            "username": "mochuxuan"
+        }
+    ],
+    //c_cpp
+    // "C_Cpp.default.compilerPath":"/opt/compiler/gcc-8.2/bin/gcc",
+    //golang related
+    "go.gopath": "$HOME/project:$HOME/project/src/icode.baidu.com/baidu/netdisk/pcs-go-lib/output:$HOME/project/src/icode.baidu.com/baidu/netdisk/pcs-go-lib:$HOME/gotools",
+    "go.toolsGopath": "~/project",
+    "go.lintOnSave": "off",
+    "go.formatTool": "goimports",
+    // "go.testEnvFile": "$HOME/govscoderc",
+    //php related
+    "php.executablePath": "$HOME/opt/bin/php",
+    "php.suggest.basic": false,
+    "php.validate.executablePath": "$HOME/opt/bin/php",
+    
+// "java.configuration.runtimes": [],
+// java
+// "debug.javascript.defaultRuntimeExecutable": {
+//     "pwa-node": "node"
+//   }
+
+    // "maven.terminal.useJavaHome": true,
+    // "java.import.gradle.java.home": "$HOME/opt/jdk-11",
+    //   "java.home": "$JAVA_HOME",
+    // 注意：如果使用了别的版本的 JDK 需要配置这个
+    // "java.configuration.runtimes": [
+
+    //     {
+    //         "name": "JavaSE-1.8",
+    //         "path": "$HOME/opt/jdk1.8.0_311",
+    //     },
+    // ],
+    // "remote.autoForwardPortsSource": "output",
+    // "spring-boot.ls.java.home": "$HOME/opt/jdk-11",
+    // "maven.executable.path": "$HOME/opt/apache-maven-3.6.3/bin/mvn",
+    "java.configuration.runtimes": [
+        {
+          "name": "JavaSE-1.8",
+          "path": "$HOME/opt/jdk1.8.0_311-",
+        },
+        {
+          "name": "JavaSE-11",
+          "path": "$HOME/opt/jdk-11",
+        },
+      ],
+
+    // PLUGIN SPECIFIC
+    "sync.autoDownload": true,
+    "sync.autoUpload": true,
+    "sync.syncExtensions": true,
+    "sync.removeExtensions": false,
+    "sync.autoUploadDelay": 300,
+    
+    // editor function
+    "files.exclude": {
+        ".*.swp": true,
+        "**/__pycache__": true,
+        "**/.*.dc": true,
+        "**/.*.df": true,
+        "**/.*.SCM": true,
+        "**/.*.swp": true,
+        "**/.bcloud.*": true,
+        "**/.COMAKE.*": true,
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.hg": true,
+        "**/.idea": true,
+        "**/.smbdelete*": true,
+        "**/.svn": true,
+        "**/.tags": true,
+        "**/.vscode": true,
+        "**/tmp": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    "search.exclude": {
+        "**/.COMAKE.*": true,
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.gitignore": true,
+        "**/.hg": true,
+        "**/.idea": true,
+        "**/.svn": true,
+        "**/.vscode": true,
+        "**/*.code-search": true,
+        "**/assets": true,
+        "**/build": true,
+        "**/CVS": true,
+        "**/tmp": true
+    },
+    "files.watcherExclude": {
+        "**/.idea": true,
+        "**/.vscode": true,
+        "**/tmp": true
+    },
+    "bracketPairColorizer.showVerticalScopeLine": false,
+    "bracketPairColorizer.showHorizontalScopeLine": false,
+    "bracket-pair-colorizer-2.showHorizontalScopeLine": false,
+    "bracket-pair-colorizer-2.showVerticalScopeLine": false,
+    //cpp
+    // "cmake.configureSettings": {
+    //     "CMAKE_BUILD_TYPE": "Release",
+    //     "WITH_DSO": "ON",
+    //     "WITH_GPU": "ON",
+    //     "WITH_AMD_GPU": "OFF",
+    //     "WITH_DISTRIBUTE": "ON",
+    //     "WITH_MKL": "ON",
+    //     "WITH_NGRAPH": "ON",
+    //     "WITH_AVX": "ON",
+    //     "WITH_GOLANG": "OFF",
+    //     "CUDA_ARCH_NAME": "Auto",
+    //     "CUDA_ARCH_BIN": "",
+    //     "WITH_PYTHON": "ON",
+    //     "CUDNN_ROOT": "/usr/",
+    //     "WITH_TESTING": "ON",
+    //     "WITH_COVERAGE": "ON",
+    //     "CMAKE_MODULE_PATH": "/opt/rocm/hip/cmake",
+    //     "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+    //     "WITH_CONTRIB": "ON",
+    //     "WITH_INFERENCE_API_TEST": "ON",
+    //     "WITH_HIGH_LEVEL_API_TEST": "OFF",
+    //     "INFERENCE_DEMO_INSTALL_DIR": "/root/.cache/inference_demo",
+    //     "PY_VERSION": "2.7",
+    //     "CMAKE_INSTALL_PREFIX": "/paddle/build",
+    //     "WITH_GRPC": "ON"
+    // }
+
+
+    // "vscode-neovim.neovimExecutablePaths.linux": "$HOME/opt/bin/nvim",
+    // "vscode-neovim.neovimInitVimPaths.linux": "$HOME/.config/nvim/init.vim",
+}
