@@ -1,0 +1,9 @@
+{
+  "registry-mirrors": [
+    "https://ns12pp11.mirror.aliyuncs.com",
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://docker.mirrors.tuna.tsinghua.edu.cn"
+  ],
+  // 开了此选项，新版 wsl2 起来的 docker 服务，在 windows 能访问，但是不开启不行
+  "iptables": false
+}

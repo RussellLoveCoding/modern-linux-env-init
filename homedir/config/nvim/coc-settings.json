@@ -1,0 +1,188 @@
+{
+    // python
+    "python.pythonPath":"$HOME/.pyenv/shims/python",
+    "explorer.icon.enableNerdfont":true,
+    "explorer.icon.source":"nvim-web-devicons",
+    "java.home":"~/opt/jdk-17.0.3.1",
+    "coc.preferences.currentFunctionSymbolAutoUpdate": true,
+    "explorer.root.customRules": {
+        "vcs": {
+            "patterns": [".git", ".hg", ".projections.json"]
+        },
+        "vcs-r": {
+            "patterns": [".git", ".hg", ".projections.json"],
+            "bottomUp": true
+        }
+    },
+    "explorer.width":25,
+    "coc.preferences.jumpCommand": "drop",
+    "outline.showLineNumber": true,
+    "diagnostic.enableHighlightLineNumber": false,
+    "languageserver": {
+        "clangd": {
+            "command": "clangd",
+            "rootPatterns": [
+                "compile_flags.txt",
+                "compile_commands.json"
+            ],
+            "filetypes": [
+                "c",
+                "cc",
+                "cpp",
+                "c++",
+                "objc",
+                "objcpp"
+            ]
+        },
+        "dockerfile": {
+            "command": "docker-langserver",
+            "filetypes": [
+                "dockerfile"
+            ],
+            "args": [
+                "--stdio"
+            ]
+        },
+        "bash": {
+            "command": "bash-language-server",
+            "args": [
+                "start"
+            ],
+            "filetypes": [
+                "sh"
+            ]
+        },
+        "golang": {
+            "command": "gopls",
+            "rootPatterns": [
+                "go.mod"
+            ],
+            "filetypes": [
+                "go"
+            ]
+        },
+        "intelephense": {
+            "command": "intelephense",
+            "args": [
+                "--stdio"
+            ],
+            "filetypes": [
+                "php"
+            ],
+            "initializationOptions": {
+                "storagePath": "/tmp/intelephense"
+            }
+        }
+        // "python": {
+        //     "command": "python",
+        //     "args": [
+        //         "-mpyls",
+        //         "-vv",
+        //         "--log-file",
+        //         "/tmp/lsp_python.log"
+        //     ],
+        //     "trace.server": "verbose",
+        //     "filetypes": [
+        //         "python"
+        //     ],
+        //     "settings": {
+        //         "pyls": {
+        //             "enable": true,
+        //             "trace": {
+        //                 "server": "verbose"
+        //             },
+        //             "commandPath": "",
+        //             "configurationSources": [
+        //                 "pycodestyle"
+        //             ],
+        //             "plugins": {
+        //                 "jedi_completion": {
+        //                     "enabled": true
+        //                 },
+        //                 "jedi_hover": {
+        //                     "enabled": true
+        //                 },
+        //                 "jedi_references": {
+        //                     "enabled": true
+        //                 },
+        //                 "jedi_signature_help": {
+        //                     "enabled": true
+        //                 },
+        //                 "jedi_symbols": {
+        //                     "enabled": true,
+        //                     "all_scopes": true
+        //                 },
+        //                 "mccabe": {
+        //                     "enabled": true,
+        //                     "threshold": 15
+        //                 },
+        //                 "preload": {
+        //                     "enabled": true
+        //                 },
+        //                 "pycodestyle": {
+        //                     "enabled": true
+        //                 },
+        //                 "pydocstyle": {
+        //                     "enabled": false,
+        //                     "match": "(?!test_).*\\.py",
+        //                     "matchDir": "[^\\.].*"
+        //                 },
+        //                 "pyflakes": {
+        //                     "enabled": true
+        //                 },
+        //                 "rope_completion": {
+        //                     "enabled": true
+        //                 },
+        //                 "yapf": {
+        //                     "enabled": true
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // diagnostic 有错
+        // "sql": {
+        //     "command": "sql-language-server",
+        //     "args": [
+        //         "up",
+        //         "--method",
+        //         "stdio"
+        //     ],
+        //     "filetypes": [
+        //         "sql"
+        //     ],
+        //     "settings": {
+        //         "sqlLanguageServer": {
+        //             "connections": [
+        //                 {
+        //                     "name": "mysql_project",
+        //                     "adapter": "mysql",
+        //                     "host": "127.0.0.1",
+        //                     "port": 3306,
+        //                     "user": "bae",
+        //                     "password": "Bae@111111",
+        //                     "database": "mysql_db",
+        //                     "projectPaths": [
+        //                         "/home/bae/project/src/github.com/HinsonM/learn-mysql"
+        //                     ]
+        //                 }
+        //             ],
+        //             "lint": {
+        //                 "rules": {
+        //                     "align-column-to-the-first": "error",
+        //                     "column-new-line": "error",
+        //                     "linebreak-after-clause-keyword": "off",
+        //                     "reserved-word-case": [
+        //                         "error",
+        //                         "upper"
+        //                     ],
+        //                     "space-surrounding-operators": "error",
+        //                     "where-clause-new-line": "error",
+        //                     "align-where-clause-to-the-first": "error"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+    }
+}

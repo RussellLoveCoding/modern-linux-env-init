@@ -1,0 +1,13 @@
+[wsl2]
+#networkingMode=bridged
+#vmSwitch=WSLBridge
+ipv6=true
+memory=8G
+[experimental]
+autoMemoryReclaim=gradual
+networkingMode=mirrored
+dnsTunneling=true
+sparseVhd=true
+firewall=true
+autoProxy=false
+hostAddressLoopback=true

@@ -1,0 +1,118 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "error": "/var/log/xray/error.log",
+    "access": "/var/log/xray/access.log"
+  },
+  "inbounds": [
+    {
+      "tag": "all-in",
+      "port": 12345,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "network": "tcp,udp",
+        "followRedirect": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      },
+      "streamSettings": {
+        "sockopt": {
+          "tproxy": "tproxy"
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
+      // "streamSettings": {
+      //   "sockopt": {
+      //     "mark": 2
+      //   }
+      // }
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      }
+    },
+    {
+      "tag": "dns-out",
+      "protocol": "dns",
+      "settings": {
+        "address": "8.8.8.8"
+      },
+      "proxySettings": {
+        "tag": "proxy"
+      }
+      // "streamSettings": {
+      //   "sockopt": {
+      //     "mark": 2
+      //   }
+      // }
+    }
+  ],
+  "dns": {
+    "hosts": {
+      "dns.google": ["8.8.8.8", "8.8.4.4"]
+    },
+    "servers": [
+      {
+        "address": "119.29.29.29",
+        "port": 53,
+        "domains": ["geosite:cn"],
+        "expectIPs": ["geoip:cn"]
+      },
+      {
+        "address": "223.5.5.5",
+        "port": 53,
+        "domains": ["geosite:cn"],
+        "expectIPs": ["geoip:cn"]
+      },
+      "8.8.8.8",
+      "1.1.1.1",
+      "https+local://doh.dns.sb/dns-query"
+    ]
+  },
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": ["all-in"],
+        "port": 53,
+        "outboundTag": "dns-out"
+      },
+      {
+        "type": "field",
+        "ip": ["8.8.8.8", "1.1.1.1"],
+        "outboundTag": "proxy"
+      },
+      {
+        "type": "field",
+        "domain": ["geosite:category-ads-all"],
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "domain": ["geosite:geolocation-!cn"],
+        "outboundTag": "proxy"
+      },
+      {
+        "type": "field",
+        "ip": ["geoip:telegram"],
+        "outboundTag": "proxy"
+      }
+    ]
+  }
+}
