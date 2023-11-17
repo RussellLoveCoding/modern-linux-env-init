@@ -1,5 +1,10 @@
 # dev-evn-setting
 
+# 项目名称
+
+这是一个用于配置现代Linux环境的项目，包含了一系列的配置文件和脚本。
+
+
 ## vscode
 
 > answer by github copilot
