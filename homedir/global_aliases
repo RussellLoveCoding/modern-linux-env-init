@@ -5,7 +5,7 @@ echo 'loading /etc/profile.d/global_aliases'
 #0: supplement
 alias setproxy='function _setproxy() { export http_proxy="socks5://127.0.0.1:$1"; export https_proxy="socks5://127.0.0.1:$1"; }; _setproxy'
 alias unsetproxy='unset http_proxy && unset https_proxy'
-alia szshreload='source ~/.zshrc'
+alias zshreload='source ~/.zshrc'
 alias relay='ssh mochuxuan@relay.baidu-int.com'
 alias less='less -i'
 alias relay='~/bin/relay_auto_login/relay'

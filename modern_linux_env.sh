@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# 检测区
 # -------------------------------------------------------------
 # 检查系统
 source ./pkgs.sh
@@ -365,11 +364,10 @@ setupShell() {
     echoContent green " ------------> configuring ohmyzsh"
     if [ -d ~/.oh-my-zsh ]; then
         echoContent green " ---> ohmyzsh directory already exists"
-        return
+    else
+        execute_with_timeout "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 60 "Network timeout when installing ohmyzsh"
+        chsh -s /usr/bin/zsh
     fi
-
-    execute_with_timeout "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 60 "Network timeout when installing ohmyzsh"
-    chsh -s /usr/bin/zsh
 
     echoContent green " ------------> installing auto suggestion "
     if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
@@ -422,11 +420,11 @@ setupProgLang() {
 
         command_exists bats || {
             echoContent red " ---> bats installation failed, see ${errLogFile} for details"
-            return
-        }
-    }
+                    return
+                }
+            }
 
-    installPython() {
+            installPython() {
 
         # install pyenv
         echoContent green " ---> installing pyenv"
@@ -437,7 +435,7 @@ setupProgLang() {
 
         command_exists pyenv || {
             curl https://pyenv.run | bash 1>/dev/null 2>>${errLogFile}
-            echoContent green " ---> setting up pyenv, add env var to $shellProfile"
+                    echoContent green " ---> setting up pyenv, add env var to $shellProfile"
 
             # TODO
             echo "" >$shellProfile
@@ -453,17 +451,17 @@ setupProgLang() {
 
         command_exists pyenv || {
             echoContent red " ---> pyenv installtion failed, python have not been installed, see ${errLogFile} for details"
-            return
-        }
+                    return
+                }
 
-        latestVersion=$(pyenv install --list | grep -v - | grep -v b | tail -2 | head -1)
-        # install
-        pyenv install ${latestVersion}
-        pyenv global ${latestVersion}
+                latestVersion=$(pyenv install --list | grep -v - | grep -v b | tail -2 | head -1)
+                # install
+                pyenv install ${latestVersion}
+                pyenv global ${latestVersion}
 
         # configure
         echoContent green """ ---> setting up python, you can choose your own pip mirror site by
-running pip config set global.index-url default is https://pypi.tuna.tsinghua.edu.cn/simple
+        running pip config set global.index-url default is https://pypi.tuna.tsinghua.edu.cn/simple
         """
         pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
@@ -473,18 +471,18 @@ running pip config set global.index-url default is https://pypi.tuna.tsinghua.ed
         command_exists ipython || echoContent red " ---> ipython installation failed, see ${errLogFile} for details"
 
         echoContent green """ ---> installing common python packages, including:
-lxml
-ipaddress
-python-dateutil
-apscheduler
-mycli
-aiohttp
-datetime
-timeit
-docker-compose
-chardet
-supervisor
-python-dateutil
+        lxml
+        ipaddress
+        python-dateutil
+        apscheduler
+        mycli
+        aiohttp
+        datetime
+        timeit
+        docker-compose
+        chardet
+        supervisor
+        python-dateutil
         """
 
         pip install lxml >/dev/null 2>&1
@@ -539,156 +537,156 @@ python-dateutil
         echoContent green " ---> Downloading golang package"
         command_exists go && {
             echoContent green " ---> golang have been installed, nothing installed"
-            return
-        }
-        pushd /tmp
-        case $os in
-        "linux")
-            case $arch in
-            "amd64")
-                archVariant=amd64
-                ;;
-            "x86_64")
-                archVariant=amd64
-                ;;
-            "aarch64")
-                archVariant=arm64
-                ;;
-            "armv6" | "armv7l")
-                archVariant=armv6l
-                ;;
-            "armv8")
-                archVariant=arm64
-                ;;
-            "i686")
-                archVariant=386
-                ;;
-            .*386.*)
-                archVariant=386
-                ;;
-            esac
-            platform="linux-$archVariant"
-            ;;
-        "Darwin")
-            case $arch in
-            "x86_64")
-                archVariant=amd64
-                ;;
-            "arm64")
-                archVariant=arm64
-                ;;
-            esac
-            platform="darwin-$archVariant"
-            ;;
-        esac
+                    return
+                }
+                pushd /tmp
+                case $os in
+                    "linux")
+                        case $arch in
+                            "amd64")
+                                archVariant=amd64
+                                ;;
+                            "x86_64")
+                                archVariant=amd64
+                                ;;
+                            "aarch64")
+                                archVariant=arm64
+                                ;;
+                            "armv6" | "armv7l")
+                                archVariant=armv6l
+                                ;;
+                            "armv8")
+                                archVariant=arm64
+                                ;;
+                            "i686")
+                                archVariant=386
+                                ;;
+                            .*386.*)
+                                archVariant=386
+                                ;;
+                        esac
+                        platform="linux-$archVariant"
+                        ;;
+                    "Darwin")
+                        case $arch in
+                            "x86_64")
+                                archVariant=amd64
+                                ;;
+                            "arm64")
+                                archVariant=arm64
+                                ;;
+                        esac
+                        platform="darwin-$archVariant"
+                        ;;
+                esac
 
-        if [ -z "$platform" ]; then
-            echo "Your operating system is not supported by the script."
-            return
-        fi
+                if [ -z "$platform" ]; then
+                    echo "Your operating system is not supported by the script."
+                    return
+                fi
 
-        version=$(curl -Ls https://golang.org/dl/ |
-            grep -oP 'go([0-9\.]+)\.linux-amd64\.tar\.gz' |
-            grep -oP 'go[0-9\.]+' |
-            head -n 1 |
-            sed 's/.$//')
+                version=$(curl -Ls https://golang.org/dl/ |
+                    grep -oP 'go([0-9\.]+)\.linux-amd64\.tar\.gz' |
+                    grep -oP 'go[0-9\.]+' |
+                    head -n 1 |
+                    sed 's/.$//')
 
-        packageName=$(curl -Ls https://go.dev/dl | grep -oP "go([0-9\.]+)\.${os}-${archVariant}\.tar\.gz" | head -n 1)
-        if [ -z "$packageName" ]; then
-            echoContent red \
-                " ---> golang doesn't not support your system and architecture: ${os}-${archVariant}, nothing installed"
-            return
-        fi
+                packageName=$(curl -Ls https://go.dev/dl | grep -oP "go([0-9\.]+)\.${os}-${archVariant}\.tar\.gz" | head -n 1)
+                if [ -z "$packageName" ]; then
+                    echoContent red \
+                        " ---> golang doesn't not support your system and architecture: ${os}-${archVariant}, nothing installed"
+                                            return
+                fi
 
-        curl -LsSO "https://golang.org/dl/${packageName}"
-        sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${packageName}
-        popd
+                curl -LsSO "https://golang.org/dl/${packageName}"
+                sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${packageName}
+                popd
 
-        command_exists go || {
-            echoContent red " ---> golang installtion failed, see ${errLogFile} for details"
-            return
-        }
+                command_exists go || {
+                    echoContent red " ---> golang installtion failed, see ${errLogFile} for details"
+                                    return
+                                }
 
-        echoContent green " ---> setting up golang environment, including gopath: $HOME/projs, $HOME/go, installing gotools"
+                                echoContent green " ---> setting up golang environment, including gopath: $HOME/projs, $HOME/go, installing gotools"
 
-        for dir in ~/go/{bin,pkg,src}; do
-            [ ! -d "$dir" ] && mkdir -p "$dir"
-        done
-        for dir in ~/projs/{bin,pkg,src}; do
-            [ ! -d "$dir" ] && mkdir -p "$dir"
-        done
+                                for dir in ~/go/{bin,pkg,src}; do
+                                    [ ! -d "$dir" ] && mkdir -p "$dir"
+                                done
+                                for dir in ~/projs/{bin,pkg,src}; do
+                                    [ ! -d "$dir" ] && mkdir -p "$dir"
+                                done
 
-        {
-            echo ""
-            echo ""
-        } >>$shellProfile
+                                {
+                                    echo ""
+                                    echo ""
+                                } >>$shellProfile
 
-        checkAndAddLine '########## golang config' $shellProfile
-        checkAndAddLine 'export GOROOT='/usr/local/go'' $shellProfile
-        checkAndAddLine 'export PATH=$PATH:$GOROOT/bin' $shellProfile
-        checkAndAddLine 'export GOPATH=$HOME/go:$HOME/projs' $shellProfile
-        checkAndAddLine 'export GOPROXY=direct' $shellProfile
+                                checkAndAddLine '########## golang config' $shellProfile
+                                checkAndAddLine 'export GOROOT='/usr/local/go'' $shellProfile
+                                checkAndAddLine 'export PATH=$PATH:$GOROOT/bin' $shellProfile
+                                checkAndAddLine 'export GOPATH=$HOME/go:$HOME/projs' $shellProfile
+                                checkAndAddLine 'export GOPROXY=direct' $shellProfile
 
-        source $shellProfile
+                                source $shellProfile
 
-        go install -v github.com/mdempsky/gocode@latest
-        go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest
-        go install -v github.com/ramya-rao-a/go-outline@latest
-        go install -v github.com/acroca/go-symbols@latest
-        go install -v golang.org/x/tools/cmd/guru@latest
-        go install -v golang.org/x/tools/cmd/gorename@latest
-        go install -v github.com/go-delve/delve/cmd/dlv@latest
-        go install -v github.com/stamblerre/gocode@latest
-        go install -v github.com/rogpeppe/godef@latest
-        go install -v github.com/sqs/goreturns@latest
-        go install -v golang.org/x/lint/golint@latest
-        go install -v github.com/cweill/gotests/...@latest
-        go install -v github.com/fatih/gomodifytags@latest
-        go install -v github.com/josharian/impl@latest
-        go install -v github.com/davidrjenni/reftools/cmd/fillstruct@latest
-        go install -v github.com/haya14busa/goplay/cmd/goplay@latest
-        go install -v github.com/godoctor/godoctor@latest
-    }
+                                go install -v github.com/mdempsky/gocode@latest
+                                go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest
+                                go install -v github.com/ramya-rao-a/go-outline@latest
+                                go install -v github.com/acroca/go-symbols@latest
+                                go install -v golang.org/x/tools/cmd/guru@latest
+                                go install -v golang.org/x/tools/cmd/gorename@latest
+                                go install -v github.com/go-delve/delve/cmd/dlv@latest
+                                go install -v github.com/stamblerre/gocode@latest
+                                go install -v github.com/rogpeppe/godef@latest
+                                go install -v github.com/sqs/goreturns@latest
+                                go install -v golang.org/x/lint/golint@latest
+                                go install -v github.com/cweill/gotests/...@latest
+                                go install -v github.com/fatih/gomodifytags@latest
+                                go install -v github.com/josharian/impl@latest
+                                go install -v github.com/davidrjenni/reftools/cmd/fillstruct@latest
+                                go install -v github.com/haya14busa/goplay/cmd/goplay@latest
+                                go install -v github.com/godoctor/godoctor@latest
+                            }
 
-    uninstall_golang() {
-        rm -rf "$GOROOT"
-        if [ "$os" == "Darwin" ]; then
-            if [ "$shell" == "fish" ]; then
-                sed -i "" '/# GoLang/d' "$shellProfile"
-                sed -i "" '/set GOROOT/d' "$shellProfile"
-                sed -i "" '/set GOPATH/d' "$shellProfile"
-                sed -i "" '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
-            else
-                sed -i "" '/# GoLang/d' "$shellProfile"
-                sed -i "" '/export GOROOT/d' "$shellProfile"
-                sed -i "" '/$GOROOT\/bin/d' "$shellProfile"
-                sed -i "" '/export GOPATH/d' "$shellProfile"
-                sed -i "" '/$GOPATH\/bin/d' "$shellProfile"
-            fi
-        else
-            if [ "$shell" == "fish" ]; then
-                sed -i '/# GoLang/d' "$shellProfile"
-                sed -i '/set GOROOT/d' "$shellProfile"
-                sed -i '/set GOPATH/d' "$shellProfile"
-                sed -i '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
-            else
-                sed -i '/# GoLang/d' "$shellProfile"
-                sed -i '/export GOROOT/d' "$shellProfile"
-                sed -i '/$GOROOT\/bin/d' "$shellProfile"
-                sed -i '/export GOPATH/d' "$shellProfile"
-                sed -i '/$GOPATH\/bin/d' "$shellProfile"
-            fi
-        fi
-    }
+                            uninstall_golang() {
+                                rm -rf "$GOROOT"
+                                if [ "$os" == "Darwin" ]; then
+                                    if [ "$shell" == "fish" ]; then
+                                        sed -i "" '/# GoLang/d' "$shellProfile"
+                                        sed -i "" '/set GOROOT/d' "$shellProfile"
+                                        sed -i "" '/set GOPATH/d' "$shellProfile"
+                                        sed -i "" '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
+                                    else
+                                        sed -i "" '/# GoLang/d' "$shellProfile"
+                                        sed -i "" '/export GOROOT/d' "$shellProfile"
+                                        sed -i "" '/$GOROOT\/bin/d' "$shellProfile"
+                                        sed -i "" '/export GOPATH/d' "$shellProfile"
+                                        sed -i "" '/$GOPATH\/bin/d' "$shellProfile"
+                                    fi
+                                else
+                                    if [ "$shell" == "fish" ]; then
+                                        sed -i '/# GoLang/d' "$shellProfile"
+                                        sed -i '/set GOROOT/d' "$shellProfile"
+                                        sed -i '/set GOPATH/d' "$shellProfile"
+                                        sed -i '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
+                                    else
+                                        sed -i '/# GoLang/d' "$shellProfile"
+                                        sed -i '/export GOROOT/d' "$shellProfile"
+                                        sed -i '/$GOROOT\/bin/d' "$shellProfile"
+                                        sed -i '/export GOPATH/d' "$shellProfile"
+                                        sed -i '/$GOPATH\/bin/d' "$shellProfile"
+                                    fi
+                                fi
+                            }
 
-    install_java() {
-        # ebuntu 一键配置JDK环境
-        echo -e "开始安装Java"
-        apt-get install python-software-properties >/dev/null 2>&1
-        add-apt-repository ppa:linuxuprising/java >/dev/null 2>&1
-        apt-get update >/dev/null 2>&1
-        apt-get install oracle-java8-installer >/dev/null 2>&1
-        apt install oracle-java8-set-default >/dev/null 2>&1
+                            install_java() {
+                                # ebuntu 一键配置JDK环境
+                                echo -e "开始安装Java"
+                                apt-get install python-software-properties >/dev/null 2>&1
+                                add-apt-repository ppa:linuxuprising/java >/dev/null 2>&1
+                                apt-get update >/dev/null 2>&1
+                                apt-get install oracle-java8-installer >/dev/null 2>&1
+                                apt install oracle-java8-set-default >/dev/null 2>&1
 
         # 手动配置 java
         if command -v java >/dev/null 2>&1; then
@@ -722,55 +720,55 @@ setupDevEnv() {
 
         command_exists docker || {
             pushd /tmp
-            echoContent green " ---> installing docker"
-            curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
-            sudo sh get-docker.sh
-            popd
-        }
+                    echoContent green " ---> installing docker"
+                    curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
+                    sudo sh get-docker.sh
+                    popd
+                }
 
-        command_exists docker || {
-            echoContent red " ---> docker installtion failed, see ${errLogFile} for details"
-            return
-        }
+                command_exists docker || {
+                    echoContent red " ---> docker installtion failed, see ${errLogFile} for details"
+                                    return
+                                }
 
-        iswsl2=$(uname -r | grep -io wsl2)
-        if [ -n "$iswsl2" ]; then
-            echoContent red \
-                " ---> It seems your system is wsl2, please check your C:\Users\yourname\.wslconfig file \
-                to see if it have enabled mirror network mode, if so, \
-                you'll have to add the following key-value to /etc/docker/daemon.json, \
-                then reload it to make it effective \
-                with command 'sudo systemctl daemon-reload && sudo systemctl restart docker', see \
-                https://github.com/microsoft/WSL/issues/10494"
-            echo '"iptables": false'
-        fi
+                                iswsl2=$(uname -r | grep -io wsl2)
+                                if [ -n "$iswsl2" ]; then
+                                    echoContent red \
+                                        " ---> It seems your system is wsl2, please check your C:\Users\yourname\.wslconfig file \
+                                        to see if it have enabled mirror network mode, if so, \
+                                        you'll have to add the following key-value to /etc/docker/daemon.json, \
+                                    then reload it to make it effective \
+                                        with command 'sudo systemctl daemon-reload && sudo systemctl restart docker', see \
+                                        https://github.com/microsoft/WSL/issues/10494"
+                                                                            echo '"iptables": false'
+                                fi
 
         # config user authorization so that non root user directly use docker command
         echoCOntent green " ---> configuring docker user authorization, in order to run \
-        docker command without sudo:w"
-        sudo groupadd docker
-        gpasswd -a ${USER} docker
-        sudo systemctl restart docker
-        sudo chmod a+rw /var/run/docker.sock
-    }
+            docker command without sudo:w"
+                    sudo groupadd docker
+                    gpasswd -a ${USER} docker
+                    sudo systemctl restart docker
+                    sudo chmod a+rw /var/run/docker.sock
+                }
 
-    installNodejsByNvm() {
-        command_exists node &&
-            echoContent green " ---> nodejs have been installed, nothing installed" && return
+                installNodejsByNvm() {
+                    command_exists node &&
+                        echoContent green " ---> nodejs have been installed, nothing installed" && return
 
-        command_exists node || {
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
-            nvm install node
-            nvm use node
-        }
+                    command_exists node || {
+                        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
+                                            nvm install node
+                                            nvm use node
+                                        }
 
-        command_exists node || {
-            echoContent red " ---> nodejs installtion failed, see ${errLogFile} for details"
-            return
-        }
-    }
+                                        command_exists node || {
+                                            echoContent red " ---> nodejs installtion failed, see ${errLogFile} for details"
+                                                                                    return
+                                                                                }
+                                                                            }
 
-    k8s() {
+                                                                            k8s() {
 
         # 镜像源配置
         proxychains4 wget
@@ -843,6 +841,8 @@ setupDevEnv() {
         ${installType} redis-server 1>/dev/null 2>>${errLogFile}
 
     }
+
+    installDocker
 }
 
 setupDataIntensiveAppServerDependencies() {
@@ -888,22 +888,22 @@ EOT
     <url>https://maven.aliyun.com/repository/public</url>
 </mirror>
 EOT
-        sed -i "/<mirrors>/r $tmpfile" $HOME/opt/apache-maven-3.6.3/conf/settings.xml
-        \rm -rf $tmpfile
+sed -i "/<mirrors>/r $tmpfile" $HOME/opt/apache-maven-3.6.3/conf/settings.xml
+\rm -rf $tmpfile
 
-    }
+}
 
-    install_hadoop() {
-        # hadoop
-        export HADOOP_HOME=$HOME/opt/hadoop-2.10.1
-        export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-    }
+install_hadoop() {
+    # hadoop
+    export HADOOP_HOME=$HOME/opt/hadoop-2.10.1
+    export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+}
 
-    install_zookeeper() {
-        # curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3.tar.gz
-        curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
-        tar -C $OPT -xzf $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
-        tee -a ~/.zshrc >/dev/null <<EOT
+install_zookeeper() {
+    # curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3.tar.gz
+    curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
+    tar -C $OPT -xzf $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
+    tee -a ~/.zshrc >/dev/null <<EOT
 export ZOOKEEPER_HOME=$HOME/opt/apache-zookeeper-3.6.3
 export PATH=$PATH:$ZOOKEEPER_HOME/bin
 EOT
@@ -1004,13 +1004,13 @@ create database test;
 GRANT ALL ON *.* TO 'bae'@'localhost';
 EOT
 
-        echo "latest account info"
-        echo root@localhost Root@123456
-        echo bae@localhost Bae@111111
-        echo starting mysqld
-        systemctl start mysqld
-        PASSWD=$(sudo grep 'temporary password' /var/log/mysqld.log | grep -o 'root.*' | awk '{print $2}')
-        mysql --connect-expired-password -uroot -p$PASSWD <db_init.sql
+echo "latest account info"
+echo root@localhost Root@123456
+echo bae@localhost Bae@111111
+echo starting mysqld
+systemctl start mysqld
+PASSWD=$(sudo grep 'temporary password' /var/log/mysqld.log | grep -o 'root.*' | awk '{print $2}')
+mysql --connect-expired-password -uroot -p$PASSWD <db_init.sql
 
         # config mysql, 可以自动补全
         touch $HOME/.my.cnf
@@ -1052,9 +1052,9 @@ socket                                   = /var/lib/mysql/mysql.sock
 port                                     = 3306
 EOT
 
-        echo "installing mycli mysql client shell with autocompletion and syntax highlight function"
-        pip3 install -U mycli
-        echo "try it now with command: mycli -uuser -ppasswd"
+echo "installing mycli mysql client shell with autocompletion and syntax highlight function"
+pip3 install -U mycli
+echo "try it now with command: mycli -uuser -ppasswd"
 
         # 清理文件
         echo clean tmp files
@@ -1107,7 +1107,7 @@ setupDisk() {
         # "x86_64")
         #     arch=amd64
         #     ;;
-        # "arm64")
+    # "arm64")
         #     arch=arm64
         #     ;;
         # esac
@@ -1315,27 +1315,27 @@ menu() {
 
     read -r -p "请选择:" selectInstallType
     case ${selectInstallType} in
-    1)
-        setupShell
-        ;;
-    2)
-        setupBasicTools
-        ;;
-    3)
-        setupDevEnv
-        ;;
-    4)
-        setupProgLang
-        ;;
-    5)
-        setupDisk
-        ;;
-    6)
-        setupNetwork
-        ;;
-    7)
-        setupDataIntensiveAppServerDependencies
-        ;;
+        1)
+            setupShell
+            ;;
+        2)
+            setupBasicTools
+            ;;
+        3)
+            setupDevEnv
+            ;;
+        4)
+            setupProgLang
+            ;;
+        5)
+            setupDisk
+            ;;
+        6)
+            setupNetwork
+            ;;
+        7)
+            setupDataIntensiveAppServerDependencies
+            ;;
     esac
 }
 # printHeader
@@ -1346,5 +1346,6 @@ menu() {
 # Call the function with a line that does not exist in the file
 # checkAndAddLine $tmptestfile "line2"
 init
-# setupShell
-setupBasicTools
+setupShell
+# setupBasicTools
+setupDevEnv

@@ -127,3 +127,8 @@ testingEcho() {
     init
     setupShell
 }
+
+@test "installSingleOne" {
+    init
+    installNvim
+}
