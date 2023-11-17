@@ -122,3 +122,8 @@ testingEcho() {
         fi
     done
 }
+
+@test "testSetupShell" {
+    init
+    setupShell
+}

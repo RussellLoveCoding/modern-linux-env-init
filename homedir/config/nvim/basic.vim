@@ -4,7 +4,6 @@
 autocmd BufWritePost ~/.config/nvim/basic.vim source ~/.config/nvim/basic.vim 
 
 set background=dark
-colorscheme gruvbox
 
 """""""""""""""""""""
 " key mappings
@@ -203,6 +202,10 @@ set clipboard=unnamedplus
 "command! -bang -nargs=+ -complete=dir AgIn call s:ag_in(<bang>0, <f-args>)
 "g=git
 "ga='git add'
+
+" 打开 very magic mode, 即+,(,) 不需要加个反斜杠
+:nnoremap / /\v
+:cnoremap %s/ %s/\v
 
 
 """"""""""""""""""""

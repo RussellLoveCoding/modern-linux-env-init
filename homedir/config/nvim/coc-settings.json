@@ -1,6 +1,6 @@
 {
     // python
-    "python.pythonPath":"$HOME/.pyenv/shims/python",
+    "python.pythonPath":"/home/hin/.pyenv/shims/python",
     "explorer.icon.enableNerdfont":true,
     "explorer.icon.source":"nvim-web-devicons",
     "java.home":"~/opt/jdk-17.0.3.1",

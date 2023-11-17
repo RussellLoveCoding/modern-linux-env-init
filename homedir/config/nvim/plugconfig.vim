@@ -21,6 +21,10 @@ endfunction
 " PLUGIN_BEGIN_MARKER 
 
 """"""""""""""""""""
+Plug 'projekt0n/github-nvim-theme'
+
+
+""""""""""""""""""""
 " user-defined text object, defined by a pattern, a pair of patterns, Text
 " objects for a specific filetype, see help
 Plug 'kana/vim-textobj-user'   
@@ -840,7 +844,7 @@ else
     " coc-sql SQL extension for coc.nvim. Features: Format by sql-formatter; Lint by node-sql-parser
     let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-ci', 
                 \ 'coc-sql', 'coc-sh', 'coc-java', 'coc-explorer', 
-                \  'coc-xml', 'coc-metals']
+                \  'coc-metals']
     "'coc-git', 'coc-snippets', 'coc-java-debug', 'coc-git',  'coc-pyright', 'coc-go'
     " Set internal encoding of vim, not needed on neovim, since coc.nvim using some
     " unicode characters in the file autoload/float.vim

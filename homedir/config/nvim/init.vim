@@ -17,3 +17,4 @@ source $HOME/.config/nvim/basic.vim
 source $HOME/.config/nvim/plugconfig.vim
 source $HOME/.config/nvim/highlight.vim
 source $HOME/.config/nvim/cmd.vim
+colorscheme github_dark

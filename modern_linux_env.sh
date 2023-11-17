@@ -30,14 +30,14 @@ echoContent() {
     local color=$1
     local content=$2
     case $color in
-    "red") echo -e "\033[31m${content}\033[0m" >&3 ;;
-    "green") echo -e "\033[32m${content}\033[0m" >&3 ;;
-    "yellow") echo -e "\033[33m${content}\033[0m" >&3 ;;
-    "blue") echo -e "\033[34m${content}\033[0m" >&3 ;;
-    "purple") echo -e "\033[35m${content}\033[0m" >&3 ;;
-    "skyblue") echo -e "\033[36m${content}\033[0m" >&3 ;;
-    "white") echo -e "\033[37m${content}\033[0m" >&3 ;;
-    *) echo "${content}" >&3 ;;
+    "red") echo -e "\033[31m${content}\033[0m" ;;
+    "green") echo -e "\033[32m${content}\033[0m" ;;
+    "yellow") echo -e "\033[33m${content}\033[0m" ;;
+    "blue") echo -e "\033[34m${content}\033[0m" ;;
+    "purple") echo -e "\033[35m${content}\033[0m" ;;
+    "skyblue") echo -e "\033[36m${content}\033[0m" ;;
+    "white") echo -e "\033[37m${content}\033[0m" ;;
+    *) echo "${content}" ;;
     esac
 }
 # echoContent() {
@@ -226,11 +226,6 @@ setupBasicTools() {
         echoContent green " ---> installing basic tools"
         ${upgrade} >>${execLogFile} 2>&1
 
-        ${installType} openssh-client openssh-server 1>/dev/null 2>>${errLogFile}
-        if ! command -v ssh >/dev/null || ! command -v sshd >/dev/null; then
-            echoContent red " ---> ssh client or server installation failed, see ${errLogFile} for details"
-        fi
-
         for pkg in $pkgsKeys; do
             pkgName="$pkg"
             commandName=${pkgsDict[$pkgName]}
@@ -249,15 +244,14 @@ setupBasicTools() {
             fi
         fi
         command_exists crontab || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
-
-        ${installType} lsb-core 1>/dev/null 2>>${errLogFile}
-        command_exists lsb_release || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
     }
 
     installNVim() {
 
         echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
         command_exists nvim && echoContent green " ---> nvim have been installed, nothing installed" && return
+
+        $installType ctags
 
         pushd /tmp
         if [ "$arch" == "x86_64" ]; then
@@ -266,9 +260,9 @@ setupBasicTools() {
         curl -sSOL https://github.com/neovim/neovim/releases/download/stable/nvim-linux${archVariant}.tar.gz
         tar nvim-linux${archVariant}.tar.gz
 
-        tar -xzf nvim-linux${archVariant}.tar.gz -C /usr/local/
-        mv /usr/local/nvim-linux$archVariant /usr/local/nvim
-        ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
+        sudo tar -xzf nvim-linux${archVariant}.tar.gz -C /usr/local/
+        sudo mv /usr/local/nvim-linux$archVariant /usr/local/nvim
+        sudo ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
         $rm nvim-linux${archVariant}.tar.gz
         popd
 
@@ -279,6 +273,7 @@ setupBasicTools() {
 
         echoContent "--> configuring nvim"
         if [ ! -d ~/.config/nvim ]; then
+            [ ! -d ~/.config ] && mkdir -p ~/.config
             \copy -rf ${modernEnvHomeDir}/.config/nvim ~/.config/nvim
         fi
 
@@ -297,6 +292,7 @@ setupBasicTools() {
 
         # install tmux
         echoContent green " ---> installing tmux"
+        command_exists tmux && echoContent green " ---> tmux have been installed, nothing installed" && return
         $installType tmux 1>/dev/null 2>>${errLogFile}
         command_exists tmux || {
             echoContent red " ---> tmux installation failed, see ${errLogFile} for details"
@@ -312,8 +308,8 @@ setupBasicTools() {
         tmux source ~/.tmux.conf
         # cp /home/cmc/dev-env-setting/mux-airline-gruvbox-dark.conf ~/.tmux/
 
-        echo "please enter tmux seesion and install tmux plugin with key stroke prefix-I" 
-        echo "common key binding: prefix+I for install plugin; prefix+U for udpate "
+        echoContent green "please enter tmux seesion and install tmux plugin with key stroke prefix-I"
+        echoContent green "common key binding: prefix+I for install plugin; prefix+U for udpate "
 
     }
 
@@ -347,15 +343,11 @@ setupBasicTools() {
         fi
     }
 
-    removeBasicTools() {
-        echo
-    }
-
-    installBasicTools
+    # installBasicTools
     installNVim
-    installTmux
-    installEnhancedTools
-    installGithub
+    # installTmux
+    # installEnhancedTools
+    # installGithub
 }
 
 # install ohmyzsh
@@ -371,6 +363,11 @@ setupShell() {
         return
     }
     echoContent green " ------------> configuring ohmyzsh"
+    if [ -d ~/.oh-my-zsh ]; then
+        echoContent green " ---> ohmyzsh directory already exists"
+        return
+    fi
+
     execute_with_timeout "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 60 "Network timeout when installing ohmyzsh"
     chsh -s /usr/bin/zsh
 
@@ -412,7 +409,7 @@ setupShell() {
 }
 
 # install programming language environment, based on your choice
-setup_prog_lang() {
+setupProgLang() {
 
     installBash() {
         # unittest tool
@@ -716,7 +713,7 @@ python-dateutil
 }
 
 # 开发环境配置
-setup_dev_env() {
+setupDevEnv() {
 
     installDocker() {
 
@@ -762,7 +759,7 @@ setup_dev_env() {
             echoContent green " ---> nodejs have been installed, nothing installed" && return
 
         command_exists node || {
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash2 >>${errLogFile} 1>/dev/null
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
             nvm install node
             nvm use node
         }
@@ -1306,37 +1303,38 @@ menu() {
     echoContent green "描述: Linux 初始化\c"
     checkWgetShowProgress
     echoContent red "=============================================================="
-    if [[ -n "${coreInstallType}" ]]; then
-        echoContent yellow "1.重新安装"
-    else
-        echoContent yellow "1.安装"
-    fi
-
-    echoContent yellow "2.任意组合安装"
-
-    echoContent yellow "4.Hysteria2管理"
-    echoContent yellow "5.REALITY管理"
-    echoContent yellow "6.Tuic管理"
-    echoContent yellow "7.账号管理"
+    echoContent yellow "1. setup shell"
+    echoContent yellow "2. setup basic tools"
+    echoContent yellow "3. setup developing environment"
+    echoContent yellow "4. setup programmming language"
+    echoContent yellow "5. setup disk"
+    echoContent yellow "6. setup network"
+    echoContent yellow "7. setup data intensive app server dependencies: including hadoop, zookeeper"
     echoContent red "=============================================================="
     mkdirTools
 
     read -r -p "请选择:" selectInstallType
     case ${selectInstallType} in
     1)
-        selectCoreInstall
+        setupShell
         ;;
     2)
-        selectCoreInstall
+        setupBasicTools
         ;;
     3)
-        initXrayFrontingConfig 1
+        setupDevEnv
         ;;
     4)
-        manageHysteria
+        setupProgLang
         ;;
     5)
-        manageReality 1
+        setupDisk
+        ;;
+    6)
+        setupNetwork
+        ;;
+    7)
+        setupDataIntensiveAppServerDependencies
         ;;
     esac
 }
@@ -1347,6 +1345,6 @@ menu() {
 # echo "line1" > $tmptestfile
 # Call the function with a line that does not exist in the file
 # checkAndAddLine $tmptestfile "line2"
-# init
+init
 # setupShell
-# setupBasicTools
+setupBasicTools
