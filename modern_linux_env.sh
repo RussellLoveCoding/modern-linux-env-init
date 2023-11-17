@@ -88,108 +88,65 @@ checkAndAddLine() {
     cat $file
 }
 
-# get system distribution info
-checkSystem() {
-    kernel_version=`uname -v`
-    if echo "$kernel_version" | grep -rin centos; then
-        release="centos"
-        installType='yum -y install'
-        removeType='yum -y remove'
-        upgrade="yum update -y --skip-broken"
-    elif  echo "$kernel_version" | grep -rin "debian" ];then
-        release="debian"
-        installType='apt -y install'
-        upgrade="apt update"
-        updateReleaseInfoChange='apt-get --allow-releaseinfo-change update'
-        removeType='apt -y autoremove'
-    elif  echo "$kernel_version" | grep -rin "ubuntu" ];then
-        release="ubuntu"
-        installType='apt -y install'
-        upgrade="apt update"
-        updateReleaseInfoChange='apt-get --allow-releaseinfo-change update'
-        removeType='apt -y autoremove'
-        if grep </etc/issue -q -i "16."; then
-            release=
-        fi
-    fi
-
-    if [[ -z ${release} ]]; then
-        echoContent red "\n本脚本不支持此系统，请将下方日志反馈给开发者\n"
-        echoContent yellow "$(cat /etc/issue)"
-        echoContent yellow "$(cat /proc/version)"
-        exit 0
-    fi
-}
-
 # get os CPU vendor
-checkCPUVendor() {
-    # 获得系统名称并转换为小写
-    os=$(uname | tr 'A-Z' 'a-z')
-
-    if [[ -n $(which uname) ]]; then
-        if [[ "$(uname)" == "Linux" ]]; then
-            case "$(uname -m)" in
-            'amd64' | 'x86_64')
-                xrayCoreCPUVendor="Xray-linux-64"
-                v2rayCoreCPUVendor="v2ray-linux-64"
-                hysteriaCoreCPUVendor="hysteria-linux-amd64"
-                tuicCoreCPUVendor="-x86_64-unknown-linux-musl"
-                warpRegCoreCPUVendor="main-linux-amd64"
-                singBoxCoreCPUVendor="-linux-amd64"
-                ;;
-            'armv8' | 'aarch64')
-                # 这里应该怎么写，没学过
-                xrayCoreCPUVendor="Xray-linux-arm64-v8a"
-                v2rayCoreCPUVendor="v2ray-linux-arm64-v8a"
-                hysteriaCoreCPUVendor="hysteria-linux-arm64"
-                tuicCoreCPUVendor="-aarch64-unknown-linux-musl"
-                warpRegCoreCPUVendor="main-linux-arm64"
-                singBoxCoreCPUVendor="-linux-arm64"
-                ;;
-            *)
-                echo "  不支持此CPU架构--->"
-                exit 1
-                ;;
-            esac
-        fi
-    else
-        echoContent red "  无法识别此CPU架构，默认amd64、x86_64--->"
-        xrayCoreCPUVendor="Xray-linux-64"
-        v2rayCoreCPUVendor="v2ray-linux-64"
-    fi
-
-    os="$(uname -s)"
-    arch="$(uname -m)"
-
-}
 
 # initialize global variable
 # 在安装 install_zsh 后，需要再运行一次 init() 函数，以更新 shellProfile 变量
 init() {
 
+    # installation total progress
+    totalProgress=1
+
+    # path definition
     globalInstallDir='/usr/local'
     localInstallDir="$HOME/opt"
+    errLogFile='/tmp/modern_linux_init_error.log'
+    execLogFile='/tmp/modern_linux_init_exec.log'
+    modernEnvPath="/tmp/modern-linux-env-init"
+    modernEnvHomeDir="${modernEnvPath}/homedir"
 
-    errLogFile='/var/log/modern_linux_init_error.log'
-    execLogFile='/var/log/modern_linux_init_exec.log'
+    # command redefinition
     installType='apt -y install'
     removeType='apt -y remove'
     upgrade="apt -y update"
-
-    # 核心支持的cpu版本
-
-    # CPU arch
-    arch=""
-    os=""
 
     wget='wget --no-check-certificate'
     curl='curl -OLk'
     optdir="$HOME/opt"
     usrlocal='/usr/local'
+    
+    # detect architecture and os type
+    os=$(uname -s | tr '[:upper:]' '[:lower:]')
+    arch=$(uname -m)
 
-    modernEnvPath="/etc/modern_linux_env"
-    modernEnvHomeDir="${modernEnvPath}/homedir"
+    # detect distribution
+    distro=$(cat /etc/*-release | grep '^ID=' | cut -d'=' -f2)
+    case "$distro" in
+    "centos")
+        release="centos"
+        installType='yum -y install'
+        removeType='yum -y remove'
+        upgrade="yum update -y --skip-broken"
+        ;;
+    "debian")
+        release="debian"
+        installType='apt -y install'
+        upgrade="apt update"
+        removeType='apt -y autoremove'
+        ;;
+    "ubuntu")
+        release="ubuntu"
+        installType='apt -y install'
+        upgrade="apt update"
+        removeType='apt -y autoremove'
+        ;;
+    *)
+        echo "不支持的系统"
+        exit 1
+        ;;
+    esac
 
+    # detect shell shell profile
     if [ -n "$($SHELL -c 'echo $ZSH_VERSION')" ]; then
         shellProfile="$HOME/.zshrc"
     elif [ -n "$($SHELL -c 'echo $BASH_VERSION')" ]; then
@@ -203,12 +160,11 @@ init() {
         fi
     fi
 
-    [ -d /tmp/modern_linux_env ] || {
-        git clone https://github.com/RussellLoveCoding/modern_linux_env.git /tmp/modern_linux_env 1>/dev/null 2>${errLogFile}
+    # fetch necessary configuration file.
+    [ -d $modernEnvPath ] || {
+        echoContent green " --> fetching necessary configuration file from github"
+        git clone https://github.com/RussellLoveCoding/modern-linux-env-init.git $modernEnvPath 1>/dev/null
     }
-
-    checkSystem
-    checkCPUVendor
 }
 
 # ssh 端口号修改
@@ -233,11 +189,14 @@ sshConfig() {
 # install basic tools
 setupBasicTools() {
 
+    totalProgress=4
+
     pkgs="lsof man tmux htop autojump iotop ncdu jq telnet p7zip axel rename vim sqlite3 lrzsz \
     unzip git curl wget crontab lsof qrencode sudo htop man tldr tree ranger delta make tmux \
     yarn git iotop iftop atop httpie dstat rar colordiff autoconf gcc aria2"
 
     installBasicTools() {
+        echoContent skyBlue "\n进度  $1/${totalProgress} : installing basic tools"
 
         # echoContent skyBlue "\n进度  $1/${totalProgress} : 安装工具"
         echoContent skyBlue "installing necassary tools"
@@ -378,12 +337,11 @@ setupBasicTools() {
         echo
     }
 
-
-  installBasicTools
-  installNVim
-  installTmux
-  installEnhancedTools
-  installGithub
+    installBasicTools
+    installNVim
+    installTmux
+    installEnhancedTools
+    installGithub
 }
 
 # install ohmyzsh
@@ -428,7 +386,7 @@ setupShell() {
 
     sudo \cp ${modernEnvHomeDir}/global_aliases /etc/
     sudo \cp ${modernEnvHomeDir}/$shellProfile /etc/
-    echo "source /etc/" >> $shellProfile
+    echo "source /etc/" >>$shellProfile
 
     source $shellProfile
 }
@@ -568,8 +526,11 @@ python-dateutil
         }
         pushd /tmp
         case $os in
-        "Linux")
+        "linux")
             case $arch in
+            "amd64")
+                archVariant=amd64
+                ;;
             "x86_64")
                 archVariant=amd64
                 ;;
@@ -1137,7 +1098,50 @@ setupDisk() {
 
 }
 
+vpsSwissArmyKnife() {
+
+    # VPS规格测试
+    wget -qO- bench.sh | bash
+    # 或者：
+    wget -qO- git.io/superbench.sh | bash
+    # GB5-6
+    # GB6 跑分脚本，附带宽测试：
+    curl -sL yabs.sh | bash
+    # GB6 剔除带宽测试，因为都是国外节点测试，国内跑没多大意义：
+    curl -sL yabs.sh | bash -s -- -i
+    # GB5 跑分脚本，附带宽测试：
+    curl -sL yabs.sh | bash -5
+    # GB5 剔除带宽测试：
+    curl -sL yabs.sh | bash -s -- -i -5
+    # 三网测速
+    bash <(curl -sL bash.icu/speedtest)
+    bash <(curl -Lso- https://bench.im/hyperspeed)
+    bash <(curl -Lso- https://www.infski.com/files/superspeed.sh)
+    # 回程路由
+    wget -N --no-check-certificate https://raw.githubusercontent.com/Chennhaoo/Shell_Bash/master/AutoTrace.sh && chmod +x AutoTrace.sh && bash AutoTrace.sh
+    wget -qO- git.io/besttrace | bash
+    # 流媒体解锁
+    bash <(curl -L -s check.unlock.media)
+    wget -qO- https://github.com/yeahwu/check/raw/main/check.sh | bash
+    # 25端口
+    telnet smtp.aol.com 25
+    # 独服硬盘测试
+    wget -q https://github.com/Aniverse/A/raw/i/a && bash a
+    # vps去程测试网址：https://tools.ipip.net/traceroute.php
+    # vps的ping测试网址：https://ping.pe
+    # 俺的脚本
+    # 自用DD脚本：
+    # https://github.com/yeahwu/InstallOS
+    # 一键代理脚本：
+    # https://github.com/yeahwu/v2ray-wss
+
+}
+
 setupNetwork() {
+
+    installProxyServer() {
+        wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/install.sh" && chmod 700 /root/install.sh && /root/install.sh
+    }
 
     install_proxychains() {
         pushd /tmp
@@ -1323,6 +1327,6 @@ menu() {
 # echo "line1" > $tmptestfile
 # Call the function with a line that does not exist in the file
 # checkAndAddLine $tmptestfile "line2"
-init
-setupShell
-setupBasicTools
+# init
+# setupShell
+# setupBasicTools

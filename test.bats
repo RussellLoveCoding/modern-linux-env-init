@@ -3,7 +3,6 @@
 # Import the source file
 # source ./modern_linux_env.sh
 load './modern_linux_env.sh'
-init
 
 @test "execute_with_timeout should exit with status 1 when command times out" {
   # Call the function with a command that will definitely timeout
@@ -90,4 +89,9 @@ init
 
 @test "setupBasicTools" {
   setupBasicTools
+}
+
+
+@test "testInit, including shellprofile, os type, architecture, release detection" {
+    init
 }
