@@ -2,6 +2,7 @@
 # 检测区
 # -------------------------------------------------------------
 # 检查系统
+source ./pkgs.sh
 export LANG=en_US.UTF-8
 printHeader() {
 
@@ -26,36 +27,50 @@ echo " # https://github.com/RussellLoveCoding                    "
 ################# Helper Function  #################
 
 echoContent() {
-    case $1 in
-    # 红色
-    "red")
-        # shellcheck disable=SC2154
-        echo -e "\033[31m${printN}$2 \033[0m" >&3
-        ;;
-        # 天蓝色
-    "skyBlue")
-        echo -e "\033[1;36m${printN}$2 \033[0m"
-        ;;
-        # 绿色
-    "green")
-        echo -e "\033[32m${printN}$2 \033[0m"
-        ;;
-        # 白色
-    "white")
-        echo -e "\033[37m${printN}$2 \033[0m"
-        ;;
-    "magenta")
-        echo -e "\033[31m${printN}$2 \033[0m"
-        ;;
-        # 黄色
-    "yellow")
-        echo -e "\033[33m${printN}$2 \033[0m"
-        ;;
+    local color=$1
+    local content=$2
+    case $color in
+    "red") echo -e "\033[31m${content}\033[0m" >&3 ;;
+    "green") echo -e "\033[32m${content}\033[0m" >&3 ;;
+    "yellow") echo -e "\033[33m${content}\033[0m" >&3 ;;
+    "blue") echo -e "\033[34m${content}\033[0m" >&3 ;;
+    "purple") echo -e "\033[35m${content}\033[0m" >&3 ;;
+    "skyblue") echo -e "\033[36m${content}\033[0m" >&3 ;;
+    "white") echo -e "\033[37m${content}\033[0m" >&3 ;;
+    *) echo "${content}" >&3 ;;
     esac
 }
+# echoContent() {
+#     case $1 in
+#     # 红色
+#     "red")
+#         # shellcheck disable=SC2154
+#         echo -e "\033[31m${printN}$2 \033[0m"
+#         ;;
+#         # 天蓝色
+#     "skyBlue")
+#         echo -e "\033[1;36m${printN}$2 \033[0m"
+#         ;;
+#         # 绿色
+#     "green")
+#         echo -e "\033[32m${printN}$2 \033[0m"
+#         ;;
+#         # 白色
+#     "white")
+#         echo -e "\033[37m${printN}$2 \033[0m"
+#         ;;
+#     "magenta")
+#         echo -e "\033[31m${printN}$2 \033[0m"
+#         ;;
+#         # 黄色
+#     "yellow")
+#         echo -e "\033[33m${printN}$2 \033[0m"
+#         ;;
+#     esac
+# }
 
 command_exists() {
-    command -v "$@" 1>/dev/null 2>${errLogFile}
+    command -v "$@" 1>/dev/null 2>&1
 }
 
 execute_with_timeout() {
@@ -88,12 +103,12 @@ checkAndAddLine() {
     cat $file
 }
 
-# get os CPU vendor
-
 # initialize global variable
 # 在安装 install_zsh 后，需要再运行一次 init() 函数，以更新 shellProfile 变量
 init() {
 
+    test=0
+    test=$1
     # installation total progress
     totalProgress=1
 
@@ -105,16 +120,17 @@ init() {
     modernEnvPath="/tmp/modern-linux-env-init"
     modernEnvHomeDir="${modernEnvPath}/homedir"
 
-    # command redefinition
+    # command redefinition, in case alias
     installType='apt -y install'
     removeType='apt -y remove'
     upgrade="apt -y update"
 
-    wget='wget --no-check-certificate'
-    curl='curl -OLk'
     optdir="$HOME/opt"
+    sed="\sed"
+    rm="\rm"
     usrlocal='/usr/local'
-    
+    ip="\ip"
+
     # detect architecture and os type
     os=$(uname -s | tr '[:upper:]' '[:lower:]')
     arch=$(uname -m)
@@ -124,21 +140,21 @@ init() {
     case "$distro" in
     "centos")
         release="centos"
-        installType='yum -y install'
-        removeType='yum -y remove'
-        upgrade="yum update -y --skip-broken"
+        installType='sudo yum -y install'
+        removeType='sudo yum -y remove'
+        upgrade="sudo yum update -y --skip-broken"
         ;;
     "debian")
         release="debian"
-        installType='apt -y install'
-        upgrade="apt update"
-        removeType='apt -y autoremove'
+        installType='sudo apt -y install'
+        upgrade="sudo apt update"
+        removeType='sudo apt -y autoremove'
         ;;
     "ubuntu")
         release="ubuntu"
-        installType='apt -y install'
-        upgrade="apt update"
-        removeType='apt -y autoremove'
+        installType='sudo apt -y install'
+        upgrade="sudo apt update"
+        removeType='sudo apt -y autoremove'
         ;;
     *)
         echo "不支持的系统"
@@ -191,69 +207,56 @@ setupBasicTools() {
 
     totalProgress=4
 
-    pkgs="lsof man tmux htop autojump iotop ncdu jq telnet p7zip axel rename vim sqlite3 lrzsz \
-    unzip git curl wget crontab lsof qrencode sudo htop man tldr tree ranger delta make tmux \
-    yarn git iotop iftop atop httpie dstat rar colordiff autoconf gcc aria2"
-
     installBasicTools() {
-        echoContent skyBlue "\n进度  $1/${totalProgress} : installing basic tools"
+        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
 
         # echoContent skyBlue "\n进度  $1/${totalProgress} : 安装工具"
         echoContent skyBlue "installing necassary tools"
 
         # fix some ubuntu os problem
         if [[ "${release}" == "ubuntu" ]]; then
-            dpkg --configure -a
+            sudo dpkg --configure -a
         fi
 
         if [[ -n $(pgrep -f "apt") ]]; then
-            pgrep -f apt | xargs kill -9
+            sudo pgrep -f apt | xargs kill -9
         fi
 
         # packages using general install method
         echoContent green " ---> installing basic tools"
-        ${upgrade} >${execLogFile} 2>&1
+        ${upgrade} >>${execLogFile} 2>&1
 
-        ${installType} openssh-client openssh-server 1>/dev/null 2>${errLogFile}
+        ${installType} openssh-client openssh-server 1>/dev/null 2>>${errLogFile}
         if ! command -v ssh >/dev/null || ! command -v sshd >/dev/null; then
             echoContent red " ---> ssh client or server installation failed, see ${errLogFile} for details"
         fi
 
-        for pkg in $pkgs; do
-            command_exists ${pkg} || ${installType} ${pkg} 1>/dev/null 2>${errLogFile}
-            command_exists ${pkg} || {
-                echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
+        for pkg in $pkgsKeys; do
+            pkgName="$pkg"
+            commandName=${pkgsDict[$pkgName]}
+            command_exists $commandName || ${installType} ${pkgName} 1>/dev/null 2>>${errLogFile}
+            command_exists $commandName || {
+                echoContent red " ---> ${pkgName} installation failed, see ${errLogFile} for details"
             }
         done
 
         # packages using special install method
         if ! find /usr/bin /usr/sbin | grep -q -w cron; then
             if [[ "${release}" == "ubuntu" ]] || [[ "${release}" == "debian" ]]; then
-                ${installType} cron 1>/dev/null 2>${errLogFile}
+                ${installType} cron 1>/dev/null 2>>${errLogFile}
             else
-                ${installType} crontabs 1>/dev/null 2>${errLogFile}
+                ${installType} crontabs 1>/dev/null 2>>${errLogFile}
             fi
         fi
         command_exists crontab || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
 
-        ${installType} lsb-core 1>/dev/null 2>${errLogFile}
+        ${installType} lsb-core 1>/dev/null 2>>${errLogFile}
         command_exists lsb_release || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
-
-        command_exists ifconfig || ${installType} net-tools 1>/dev/null 2>${errLogFile}
-        command_exists ifconfig || echoContent red " ---> net-tools installation failed, see ${errLogFile} for details"
-
-        command_exists ping6 || ${installType} inetutils-ping 1>/dev/null 2>${errLogFile}
-        command_exists ping6 || echoContent red " ---> inetutils-ping installation failed, see ${errLogFile} for details"
-
-        command_exists ag || ${installType} silversearcher-ag 1>/dev/null 2>${errLogFile}
-        command_exists ag || echoContent red " ---> silversearcher-ag installation failed, see ${errLogFile} for details"
-
-        command_exists node || ${installType} nodejs 1>/dev/null 2>${errLogFile}
-        command_exists node || echoContent red " ---> nodejs installation failed, see ${errLogFile} for details"
     }
 
     installNVim() {
 
+        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
         command_exists nvim && echoContent green " ---> nvim have been installed, nothing installed" && return
 
         pushd /tmp
@@ -266,6 +269,7 @@ setupBasicTools() {
         tar -xzf nvim-linux${archVariant}.tar.gz -C /usr/local/
         mv /usr/local/nvim-linux$archVariant /usr/local/nvim
         ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
+        $rm nvim-linux${archVariant}.tar.gz
         popd
 
         command_exists nvim || {
@@ -282,6 +286,7 @@ setupBasicTools() {
     }
 
     installTmux() {
+        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
         # install tmux
         # sudo yum install -y libevent-devel.x86_64
         # cd $TMPDIR
@@ -292,38 +297,47 @@ setupBasicTools() {
 
         # install tmux
         echoContent green " ---> installing tmux"
-        $installType tmux 1>/dev/null 2>${errLogFile}
+        $installType tmux 1>/dev/null 2>>${errLogFile}
         command_exists tmux || {
             echoContent red " ---> tmux installation failed, see ${errLogFile} for details"
             return
         }
 
         echoContent green " ---> configuring tmux"
-        git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+        [ ! -d $HOME/.tmux/plugins/tpm ] && {
+            git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 1>/dev/null 2>>${errLogFile}
+        }
         [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak
-        \cp ${modernEnvHomeDir}/.tmux.conf ~/.tmux.conf
+        \cp ${modernEnvHomeDir}/tmux.conf ~/.tmux.conf
         tmux source ~/.tmux.conf
         # cp /home/cmc/dev-env-setting/mux-airline-gruvbox-dark.conf ~/.tmux/
 
-        echo "please enter tmux seesion and install tmux plugin with key stroke prefix-I"
+        echo "please enter tmux seesion and install tmux plugin with key stroke prefix-I" 
         echo "common key binding: prefix+I for install plugin; prefix+U for udpate "
 
     }
 
     installEnhancedTools() {
-        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install
+        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+        if [ ! -d ~/.fzf ]; then
+            git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+            ~/.fzf/install
+        else
+            echoContent green " ---> fzf directory already exists"
+        fi
     }
 
     installGithub() {
-        if [ "$release" -eq "ubuntu" ] || [ "$release" -eq "debian"]; then
+        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+        command_exists gh && echoContent green " ---> gh have been installed, nothing installed" && return
+        if [ "$distro" -eq "ubuntu" ]; then
             type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg &&
                 sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg &&
                 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null &&
                 sudo apt update &&
                 sudo apt install gh -y
-        elif [ $os == "centos" ]; then
+        elif [ $distro == "centos" ]; then
             sudo dnf install 'dnf-command(config-manager)'
             sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
             sudo dnf install gh
@@ -350,7 +364,7 @@ setupShell() {
     echoContent green " ---> installing zsh and ohmyzsh"
     command_exists zsh && echoContent green " ---> zsh have been installed, nothing installed"
     command_exists zsh || {
-        ${installType} zsh >/dev/null 2>${errLogFile}
+        ${installType} zsh >/dev/null 2>>${errLogFile}
     }
     command_exists zsh || {
         echoContent red " ---> zsh installation failed, see ${errLogFile} for details"
@@ -361,32 +375,38 @@ setupShell() {
     chsh -s /usr/bin/zsh
 
     echoContent green " ------------> installing auto suggestion "
-    execute_with_timeout "git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 60 "Network timeout when cloning zsh-autosuggestions"
+    if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
+        execute_with_timeout "git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 60 "Network timeout when cloning zsh-autosuggestions"
+    else
+        echoContent green " ---> zsh-autosuggestions directory already exists"
+    fi
 
     echoContent green " ------------> installing auto suggestion "
-    execute_with_timeout "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 60 "Network timeout when cloning zsh-syntax-highlighting"
-
-    # echoContent green " ------------> configuring ohmyzsh"
-    # sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    # chsh -s /usr/bin/zsh
-
-    # echoContent green " ------------> installing auto suggestion "
-    # git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-
-    # echoContent green " ------------> installing auto suggestion "
-    # git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+    if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
+        execute_with_timeout "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 60 "Network timeout when cloning zsh-syntax-highlighting"
+    else
+        echoContent green " ---> zsh-syntax-highlighting directory already exists"
+    fi
 
     echoContent green " ------------> installing MRU, easy to access recently used files or directory"
-    git clone https://github.com/agkozak/zsh-z $ZSH_CUSTOM/plugins/zsh-z
+    if [ ! -d $ZSH_CUSTOM/plugins/zsh-z ]; then
+        git clone https://github.com/agkozak/zsh-z $ZSH_CUSTOM/plugins/zsh-z
+    else
+        echoContent green " ---> zsh-z directory already exists"
+    fi
 
     echoContent green " ------------> installing install powerlevel10k, a more comfotable theme, style for ohmyzsh"
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+    if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ]; then
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+    else
+        echoContent green " ---> powerlevel10k directory already exists"
+    fi
 
-    \sed -ri 's~(plugins=(.*)~plugins=(zsh-autosuggestions yum git extract tmux golang zsh-syntax-highlighting colored-man-pages colorize pip sudo httpie gitignore zsh-z autojump \3~g' ~/.zshrc
+    \sed -ri 's~((plugins=.*)~\1\nplugins+=(zsh-autosuggestions yum git extract tmux golang zsh-syntax-highlighting colored-man-pages colorize pip sudo httpie gitignore zsh-z autojump \3~g' ~/.zshrc
 
     sudo \cp ${modernEnvHomeDir}/global_aliases /etc/
     sudo \cp ${modernEnvHomeDir}/$shellProfile /etc/
-    echo "source /etc/" >>$shellProfile
+    echo "source /etc/global_aliases" >>$shellProfile
 
     source $shellProfile
 }
@@ -400,7 +420,7 @@ setup_prog_lang() {
         pushd /tmp
         git clone https://github.com/bats-core/bats-core.git
         cd bats-core
-        sudo ./install.sh $globalInstallDir 1>/dev/null 2>${errLogFile}
+        sudo ./install.sh $globalInstallDir 1>/dev/null 2>>${errLogFile}
         popd
 
         command_exists bats || {
@@ -419,7 +439,7 @@ setup_prog_lang() {
         }
 
         command_exists pyenv || {
-            curl https://pyenv.run | bash 1>/dev/null 2>${errLogFile}
+            curl https://pyenv.run | bash 1>/dev/null 2>>${errLogFile}
             echoContent green " ---> setting up pyenv, add env var to $shellProfile"
 
             # TODO
@@ -452,7 +472,7 @@ running pip config set global.index-url default is https://pypi.tuna.tsinghua.ed
 
         echoContent green " ---> installing ipython: an interactive shell with syntax-highlighting for python"
         command_exists ipython && echoContent green " ---> ipython have been installed, nothing installed"
-        command_exists ipython || pip install ipython 1>/dev/null 2>${errLogFile}
+        command_exists ipython || pip install ipython 1>/dev/null 2>>${errLogFile}
         command_exists ipython || echoContent red " ---> ipython installation failed, see ${errLogFile} for details"
 
         echoContent green """ ---> installing common python packages, including:
@@ -706,7 +726,7 @@ setup_dev_env() {
         command_exists docker || {
             pushd /tmp
             echoContent green " ---> installing docker"
-            curl -fsSL https://get.docker.com -o get-docker.sh 2>${errLogFile} 1>/dev/null
+            curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
             sudo sh get-docker.sh
             popd
         }
@@ -742,7 +762,7 @@ setup_dev_env() {
             echoContent green " ---> nodejs have been installed, nothing installed" && return
 
         command_exists node || {
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash2 >${errLogFile} 1>/dev/null
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash2 >>${errLogFile} 1>/dev/null
             nvm install node
             nvm use node
         }
@@ -789,41 +809,41 @@ setup_dev_env() {
 
         # 常见库配置
         echoContent green " ----> installing libgeoip1"
-        ${installType} libgeoip1 1>/dev/null 2>${errLogFile}
+        ${installType} libgeoip1 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing libgeoip-dev"
-        ${installType} libgeoip-dev 1>/dev/null 2>${errLogFile}
+        ${installType} libgeoip-dev 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing openssl"
-        ${installType} openssl 1>/dev/null 2>${errLogFile}
+        ${installType} openssl 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing libcurl3-dev"
-        ${installType} libcurl3-dev 1>/dev/null 2>${errLogFile}
+        ${installType} libcurl3-dev 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing libssl-dev"
-        ${installType} libssl-dev 1>/dev/null 2>${errLogFile}
+        ${installType} libssl-dev 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing php"
-        ${installType} php 1>/dev/null 2>${errLogFile}
+        ${installType} php 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing net-tools"
-        ${installType} net-tools 1>/dev/null 2>${errLogFile}
+        ${installType} net-tools 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing ifupdown"
-        ${installType} ifupdown 1>/dev/null 2>${errLogFile}
+        ${installType} ifupdown 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing tree"
-        ${installType} tree 1>/dev/null 2>${errLogFile}
+        ${installType} tree 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing cloc"
-        ${installType} cloc 1>/dev/null 2>${errLogFile}
+        ${installType} cloc 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing python3-pip"
-        ${installType} python3-pip 1>/dev/null 2>${errLogFile}
+        ${installType} python3-pip 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing gcc"
-        ${installType} gcc 1>/dev/null 2>${errLogFile}
+        ${installType} gcc 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing gdb"
-        ${installType} gdb 1>/dev/null 2>${errLogFile}
+        ${installType} gdb 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing g++"
-        ${installType} g++ 1>/dev/null 2>${errLogFile}
+        ${installType} g++ 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing locate"
-        ${installType} locate 1>/dev/null 2>${errLogFile}
+        ${installType} locate 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing shellcheck"
-        ${installType} shellcheck 1>/dev/null 2>${errLogFile}
+        ${installType} shellcheck 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing redis-cli"
-        ${installType} redis-cli 1>/dev/null 2>${errLogFile}
+        ${installType} redis-cli 1>/dev/null 2>>${errLogFile}
         echoContent green " ----> installing redis-server"
-        ${installType} redis-server 1>/dev/null 2>${errLogFile}
+        ${installType} redis-server 1>/dev/null 2>>${errLogFile}
 
     }
 }
