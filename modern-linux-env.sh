@@ -250,9 +250,18 @@ setupBasicTools() {
         echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
         command_exists nvim && echoContent green " ---> nvim have been installed, nothing installed" && return
 
-        $installType ctags
 
         pushd /tmp
+        git clone https://github.com/universal-ctags/ctags.git
+        cd ctags
+        ./autogen.sh
+        ./configure
+        make
+        sudo make install
+        cd ..
+        \rm -rf ctags
+
+
         if [ "$arch" == "x86_64" ]; then
             archVariant=64
         fi
@@ -393,8 +402,9 @@ setupShell() {
     echoContent green " ------------> installing install powerlevel10k, a more comfotable theme, style for ohmyzsh"
     if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ]; then
         git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+        sed -rin 's~ZSH_THEME=.*~ZSH_THEME="powerlevel10k/powerlevel10k"~g;' $shellProfile
     else
-        echoContent green " ---> powerlevel10k directory already exists"
+        echoContent green " ---> powerlevel10k directory already exists, maybe you need to reset"
     fi
 
     \sed -ri 's~((plugins=.*)~\1\nplugins+=(zsh-autosuggestions yum git extract tmux golang zsh-syntax-highlighting colored-man-pages colorize pip sudo httpie gitignore zsh-z autojump \3~g' ~/.zshrc

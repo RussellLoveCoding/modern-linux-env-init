@@ -1,37 +1,102 @@
-# dev-evn-setting
+# Modern Development Environment Initialization
 
-# 项目名称
+[简体中文](./README-ZH.md)
 
-这是一个用于配置现代Linux环境的项目，包含了一系列的配置文件和脚本。
+This project is to setup a modern linux environment for development, includign
+series of configuration file and scripts.
+
+project structure specifications:
+1. vscode-setting includes 
+
+## setting up font
+
+
+this content is suggested by power10k shell theme
+
+Windows Terminal by Microsoft (the new thing): Open Settings (Ctrl+,), click
+either on the selected profile under Profiles or on Defaults, click Appearance
+and set Font face to MesloLGS NF.
+
+Visual Studio Code: Open File → Preferences → Settings (PC) or Code →
+Preferences → Settings (Mac), enter terminal.integrated.fontFamily in the search
+box at the top of Settings tab and set the value below to MesloLGS NF. Consult
+this screenshot to see how it should look like or see this issue for extra
+information.
+
+## Windows
+
+To configure Windows Terminal to the GitHub Dark Dimmed theme, you need to modify the settings file of Windows Terminal. Here are the steps:
+
+
+1. Open Windows Terminal.
+
+2. Click on the dropdown arrow in the upper right corner and select "Settings". This will open the settings file (a JSON file) of Windows Terminal.
+
+3. In this JSON file, find an array named "schemes". Each object in this array represents a color scheme.
+
+4. In the "schemes" array, add a new object, set it to the colors of GitHub's Dark Dimmed theme. For example:
+
+```json
+{
+    "name": "GitHub Dark Dimmed",
+    "background": "#22272E",
+    "foreground": "#ADBAC7",
+    "black": "#22272E",
+    "blue": "#539BF5",
+    "brightBlack": "#636E7B",
+    "brightBlue": "#539BF5",
+    "brightCyan": "#6BCAD1",
+    "brightGreen": "#6BC46D",
+    "brightPurple": "#D16D9E",
+    "brightRed": "#F47067",
+    "brightWhite": "#F0F0F0",
+    "brightYellow": "#E5C07B",
+    "cyan": "#6BCAD1",
+    "green": "#6BC46D",
+    "purple": "#D16D9E",
+    "red": "#F47067",
+    "white": "#ADBAC7",
+    "yellow": "#E5C07B"
+}
+```
+
+5. In the "profiles" object's "defaultProfile" object or the specific configuration you want to modify, set the "colorScheme" attribute to the name of the color scheme you just added. For example:
+
+```json
+{
+    "guid": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
+    "hidden": false,
+    "name": "Windows PowerShell",
+    "source": "Windows.Terminal.PowershellCore",
+    "colorScheme": "GitHub Dark Dimmed"
+}
+```
+
+6. Save and close the settings file. Windows Terminal will automatically apply the new settings.
+
+Note: This color scheme is set according to the colors of GitHub's Dark Dimmed theme, it may not be exactly the same. You can adjust the colors according to your preference.
+
 
 
 ## vscode
 
-> answer by github copilot
+## vim setting
 
-GitHub Copilot: 以下是如何在不同的操作系统上备份和恢复Visual Studio Code设置的步骤，包括快捷键、settings.json、已安装的扩展和用户代码片段：
+### clipboard sharing specifications
 
-1. 备份你的`settings.json`文件。这个文件通常位于用户主目录的`.vscode`目录中。具体路径取决于你的操作系统：
-   - Windows: `%APPDATA%\Code\User\settings.json`
-   - macOS: `~/Library/Application Support/Code/User/settings.json`
-   - Linux: `~/.config/Code/User/settings.json`
+My environment: remote host os is linux, localhost os is Windows
 
-2. 备份你的键盘快捷方式。这个文件也在用户主目录的`.vscode`目录中：
-   - Windows: `%APPDATA%\Code\User\keybindings.json`
-   - macOS: `~/Library/Application Support/Code/User/keybindings.json`
-   - Linux: `~/.config/Code/User/keybindings.json`
+how can i share clipboard between several instance of environment, including 
+1. localhost, 
+2. remote host tmux environment 
+3. neovim or vim in localhost
+3. neovim or vim in remote host. 
 
-3. 备份已安装的扩展。你可以使用`code --list-extensions`命令列出所有已安装的扩展，然后将这个列表保存到一个文件中。
+which make me can do the following:
+1. simply in localhost: copy/paste between neovim/vim instance and system clipboard instance, which means I can press `p` command in vim to paste content from Windows clipboard and paste something into Windows11 application's editor from content in neovim/vim using yank command `y`.
+2. simply in remote host: copy/paste between neovim/vim and tmux window, which means I can paste content from vim using `y`(yank) command into tmux windows using `prefix+]` command and paste content from tmux window (first enter visual mode by `prefix+[` command then select text finnally press `enter` command to copy) into vim/neovim using `p` command.
+3. cross host sharing: 
+    - direction from localhost to remote host: this is basically focusing on paste content from localhost ssystem clipboard, which is Windows, and paste it into neovim/vim using `p` command, since we can easily paste content using `ctrl+v` or `ctrl+shift+v` command to paste content into tmux or shell or other editor in remote host.
+    - direction from remote host to localhost: copy content from neovim/vim in remote host or tmux windows and then localhost system clipboard cann share read those content, so i can paste using `ctrl+v` everywhere in Windows.
 
-4. 备份你的用户代码片段。这些文件通常位于用户主目录的`.vscode`目录中，文件名以`.code-snippets`结尾：
-   - Windows: `%APPDATA%\Code\User\snippets\*.code-snippets`
-   - macOS: `~/Library/Application Support/Code/User/snippets/*.code-snippets`
-   - Linux: `~/.config/Code/User/snippets/*.code-snippets`
-
-恢复时，你可以按照以下步骤操作：
-
-1. 将备份的`settings.json`、`keybindings.json`和`.code-snippets`文件复制到新系统的相应目录中。
-
-2. 对于已安装的扩展，你可以遍历你之前保存的扩展列表，使用`code --install-extension <extension-id>`命令重新安装这些扩展。
-
-请注意，这些步骤只能备份你的设置和扩展，不能备份你的工作区设置或特定项目的设置。如果你需要备份这些设置，你需要找到并备份相应的`.vscode`目录。
+Now I knew there is one method called "OSC52" which can implement copying from remote host in both tmux and vim to localhost.
