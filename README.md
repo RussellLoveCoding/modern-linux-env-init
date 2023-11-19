@@ -80,7 +80,7 @@ Note: This color scheme is set according to the colors of GitHub's Dark Dimmed t
 
 ## vscode
 
-GitHub Copilot: Here are the steps to backup and restore Visual Studio Code settings on different operating systems, including shortcuts, settings.json, installed extensions, and user code snippets:
+Here are the steps to backup and restore Visual Studio Code settings on different operating systems, including shortcuts, settings.json, installed extensions, and user code snippets:
 
 1. Backup your `settings.json` file. This file is usually located in the `.vscode` directory in the user's home directory. The specific path depends on your operating system:
    - Windows: `%APPDATA%\Code\User\settings.json`
