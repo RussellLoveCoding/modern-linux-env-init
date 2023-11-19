@@ -80,6 +80,33 @@ Note: This color scheme is set according to the colors of GitHub's Dark Dimmed t
 
 ## vscode
 
+GitHub Copilot: Here are the steps to backup and restore Visual Studio Code settings on different operating systems, including shortcuts, settings.json, installed extensions, and user code snippets:
+
+1. Backup your `settings.json` file. This file is usually located in the `.vscode` directory in the user's home directory. The specific path depends on your operating system:
+   - Windows: `%APPDATA%\Code\User\settings.json`
+   - macOS: `~/Library/Application Support/Code/User/settings.json`
+   - Linux: `~/.config/Code/User/settings.json`
+
+2. Backup your keyboard shortcuts. This file is also in the `.vscode` directory in the user's home directory:
+   - Windows: `%APPDATA%\Code\User\keybindings.json`
+   - macOS: `~/Library/Application Support/Code/User/keybindings.json`
+   - Linux: `~/.config/Code/User/keybindings.json`
+
+3. Backup installed extensions. You can use the `code --list-extensions` command to list all installed extensions, and then save this list to a file.
+
+4. Backup your user code snippets. These files are usually located in the `.vscode` directory in the user's home directory, and the file names end with `.code-snippets`:
+   - Windows: `%APPDATA%\Code\User\snippets\*.code-snippets`
+   - macOS: `~/Library/Application Support/Code/User/snippets/*.code-snippets`
+   - Linux: `~/.config/Code/User/snippets/*.code-snippets`
+
+When restoring, you can follow these steps:
+
+1. Copy the backed-up `settings.json`, `keybindings.json`, and `.code-snippets` files to the corresponding directories on the new system.
+
+2. For installed extensions, you can iterate through the extension list you saved earlier and use the `code --install-extension <extension-id>` command to reinstall these extensions.
+
+Please note that these steps can only backup your settings and extensions, not your workspace settings or specific project settings. If you need to backup these settings, you need to find and backup the corresponding `.vscode` directory.
+
 ## vim setting
 
 ### clipboard sharing specifications
