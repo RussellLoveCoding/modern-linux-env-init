@@ -198,6 +198,9 @@ sshConfig() {
     \sed -rin '/^#?Port\s*22$/d' /etc/ssh/sshd_config
     # add new port
     echo "Port $sshNewPort" >>/etc/ssh/sshd_config
+
+    \sed -rin 's~^#?\s*PasswordAuthentication yes~PasswordAuthentication no~g;'  /etc/ssh/sshd_config
+    \sed -rin 's~^#?\s*PubkeyAuthentication yes~PasswordAuthentication no~g;'  /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
