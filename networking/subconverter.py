@@ -1,6 +1,9 @@
 import yaml
 import requests
 import base64
+import os
+import http.server
+import socketserver
 
 # 读取 Clash 配置文件
 url = os.environ.get('SUB_URL')
@@ -30,5 +33,6 @@ for proxy in proxies:
         v2rayn_links.append('vmess://' + vmess_link_encoded)
 
 # 输出 v2rayN 链接
+links=""
 for link in v2rayn_links:
     print(link)
