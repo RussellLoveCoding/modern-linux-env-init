@@ -1,0 +1,19 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    wlp2s0:
+      match:
+        macaddress: xx:xx:xx:xx # replace this mac addr via command `ip link show dev wlp2s0 | sed -rn 's~\s+link/ether ([0-9a-z:]+) .*~\1~p'`
+      set-name: wifi
+    enx68da73a61e00:
+      match:
+        macaddress: xx:xx:xx:xx  # replace this mac addr via command `ip link show dev 68:da:73:a6:1e:00 | sed -rn 's~\s+link/ether ([0-9a-z:]+) .*~\1~p'`
+      set-name: eth0
+      dhcp4: no
+      addresses: [192.168.1.130/24] # replace this ip with your own
+      routes:
+        - to: 0.0.0.0/0
+          via: 192.168.1.1 # gateway
+      nameservers:
+        addresses: [192.168.1.1,8.8.4.4] # dns

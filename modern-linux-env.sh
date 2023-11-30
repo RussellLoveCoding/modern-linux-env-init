@@ -204,6 +204,14 @@ sshConfig() {
     systemctl restart sshd
 }
 
+setupSensitiveEnvironment() {
+    echoContent green " ---> setting up sensitive environment"
+    echoContent green " ---> please modfiy template files under directory $HOME/.secrets"
+    cp -r ${modernEnvHomeDir}/.secrets $HOME/
+    chmod 600 $HOME/.secrets/*
+    chmod 700 $HOME/.secrets
+}
+
 # install basic tools
 setupBasicTools() {
 
