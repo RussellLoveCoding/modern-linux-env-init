@@ -225,7 +225,7 @@ export GROFF_NO_SGR=1         # For Konsole and Gnome-terminal
 
 
 [ -f ~/.zsh_aliases ] && source ~/.zsh_aliases >/dev/null 2>&1
-[ -f /etc/global_aliases ] && source ~/.zsh_aliases >/dev/null 2>&1
+[ -f /etc/global_aliases ] && source /etc/global_aliases >/dev/null 2>&1
 
 
 #################### Proxy ############################
