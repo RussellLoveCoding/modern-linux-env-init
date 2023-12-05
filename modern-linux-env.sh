@@ -199,8 +199,8 @@ sshConfig() {
     # add new port
     echo "Port $sshNewPort" >>/etc/ssh/sshd_config
 
-    \sed -rin 's~^#?\s*PasswordAuthentication yes~PasswordAuthentication no~g;'  /etc/ssh/sshd_config
-    \sed -rin 's~^#?\s*PubkeyAuthentication yes~PasswordAuthentication no~g;'  /etc/ssh/sshd_config
+    \sed -rin 's~^#?\s*PasswordAuthentication yes~PasswordAuthentication no~g;' /etc/ssh/sshd_config
+    \sed -rin 's~^#?\s*PubkeyAuthentication yes~PasswordAuthentication no~g;' /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
@@ -212,66 +212,89 @@ setupSensitiveEnvironment() {
     chmod 700 $HOME/.secrets
 }
 
-# install basic tools
-setupBasicTools() {
+############################# setup basic tools #############################
 
-    totalProgress=4
+setupToolsByDPKG() {
+    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
 
-    installBasicTools() {
-        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    # echoContent skyBlue "\n进度  $1/${totalProgress} : 安装工具"
+    echoContent skyBlue "installing necassary tools"
 
-        # echoContent skyBlue "\n进度  $1/${totalProgress} : 安装工具"
-        echoContent skyBlue "installing necassary tools"
+    # fix some ubuntu os problem
+    if [[ "${release}" == "ubuntu" ]]; then
+        sudo dpkg --configure -a
+    fi
 
-        # fix some ubuntu os problem
-        if [[ "${release}" == "ubuntu" ]]; then
-            sudo dpkg --configure -a
+    if [[ -n $(pgrep -f "apt") ]]; then
+        sudo pgrep -f apt | xargs kill -9
+    fi
+
+    # packages using general install method
+    echoContent green " ---> installing basic tools"
+    ${upgrade} >>${execLogFile} 2>&1
+
+    for pkg in $pkgsKeys; do
+        pkgName="$pkg"
+        commandName=${pkgsDict[$pkgName]}
+        command_exists $commandName || ${installType} ${pkgName} 1>/dev/null 2>>${errLogFile}
+        command_exists $commandName || {
+            echoContent red " ---> ${pkgName} installation failed, see ${errLogFile} for details"
+        }
+    done
+
+    # packages using special install method
+    if ! find /usr/bin /usr/sbin | grep -q -w cron; then
+        if [[ "${release}" == "ubuntu" ]] || [[ "${release}" == "debian" ]]; then
+            ${installType} cron 1>/dev/null 2>>${errLogFile}
+        else
+            ${installType} crontabs 1>/dev/null 2>>${errLogFile}
         fi
+    fi
+    command_exists crontab || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
 
-        if [[ -n $(pgrep -f "apt") ]]; then
-            sudo pgrep -f apt | xargs kill -9
-        fi
+}
 
-        # packages using general install method
-        echoContent green " ---> installing basic tools"
-        ${upgrade} >>${execLogFile} 2>&1
+installOtherBasicTools() {
+    # 在 terminal 下从远程主机复制文本到本地剪贴板
+    sudo \cp ${modernEnvPath}/scripts/osc52 /usr/local/bin/
+    
+}
 
-        for pkg in $pkgsKeys; do
-            pkgName="$pkg"
-            commandName=${pkgsDict[$pkgName]}
-            command_exists $commandName || ${installType} ${pkgName} 1>/dev/null 2>>${errLogFile}
-            command_exists $commandName || {
-                echoContent red " ---> ${pkgName} installation failed, see ${errLogFile} for details"
-            }
-        done
+# TODO: not correctly handle output from dependency installation
+setupNeovim() {
 
-        # packages using special install method
-        if ! find /usr/bin /usr/sbin | grep -q -w cron; then
-            if [[ "${release}" == "ubuntu" ]] || [[ "${release}" == "debian" ]]; then
-                ${installType} cron 1>/dev/null 2>>${errLogFile}
-            else
-                ${installType} crontabs 1>/dev/null 2>>${errLogFile}
-            fi
-        fi
-        command_exists crontab || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
+    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    command_exists nvim && {
+        echoContent green " ---> nvim have been installed, continue to configure"
     }
 
-    installNVim() {
-
-        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
-        command_exists nvim && echoContent green " ---> nvim have been installed, nothing installed" && return
-
+    command_exists nvim || {
 
         pushd /tmp
-        git clone https://github.com/universal-ctags/ctags.git
-        cd ctags
-        ./autogen.sh
-        ./configure
-        make
-        sudo make install
-        cd ..
-        \rm -rf ctags
-
+        sudo apt update 1>/dev/null 2>&1
+        echoContent green " ---> installing dependencies"
+        {
+            $installType git curl autoconf make tar gcc 1>/dev/null 2>>${errLogFile}
+            if [ $release == "ubuntu"  ]; then 
+                $installType pkg-config 1>/dev/null 2>>${errLogFile}
+            elif [ $release == "centos" ]; then
+                $installType pkgconfig 1>/dev/null 2>>${errLogFile}
+            fi
+            command_exists node || {
+                curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
+                source $shellProfile
+                nvm install node
+                nvm use node
+            }
+            git clone https://github.com/universal-ctags/ctags.git
+            cd ctags
+            ./autogen.sh 1>/dev/null 2>>${errLogFile}
+            ./configure 1>/dev/null 2>>${errLogFile}
+            make
+            sudo make install
+            cd ..
+            sudo \rm -rf ctags
+        }
 
         if [ "$arch" == "x86_64" ]; then
             archVariant=64
@@ -284,96 +307,94 @@ setupBasicTools() {
         sudo ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
         $rm nvim-linux${archVariant}.tar.gz
         popd
-
-        command_exists nvim || {
-            echoContent red " ---> nvim installtion failed, see ${errLogFile} for details"
-            return
-        }
-
-        echoContent "--> configuring nvim"
-        if [ ! -d ~/.config/nvim ]; then
-            [ ! -d ~/.config ] && mkdir -p ~/.config
-            \copy -rf ${modernEnvHomeDir}/.config/nvim ~/.config/nvim
-        fi
-
-        echoContent "--> nvim installed, later after you open nvim, plugin will be automatically installed"
     }
 
-    installTmux() {
-        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
-        # install tmux
-        # sudo yum install -y libevent-devel.x86_64
-        # cd $TMPDIR
-        # curl -L "https://github.com/tmux/tmux/releases/download/3.2a/tmux-3.2a.tar.gz" -o tmux-3.2a.tar.gz
-        # tar xzf tmux-3.2a.tar.gz
-        # cd tmux-3.2a
-        # ./configure && make -j 8 && sudo make install
+    command_exists nvim || {
+        echoContent red " ---> nvim installtion failed, see ${errLogFile} for details"
+        return
+    }
 
-        # install tmux
-        echoContent green " ---> installing tmux"
-        command_exists tmux && echoContent green " ---> tmux have been installed, nothing installed" && return
+    echoContent "--> configuring nvim"
+    if [ ! -d ~/.config/nvim ]; then
+        [ ! -d ~/.config ] && mkdir -p ~/.config
+        \cp -rf ${modernEnvHomeDir}/config/nvim ~/.config/nvim
+    fi
+
+    echoContent "--> nvim installed, later after you open nvim, plugin will be automatically installed"
+}
+
+setupTmux() {
+    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    # install tmux
+    # sudo yum install -y libevent-devel.x86_64
+    # cd $TMPDIR
+    # curl -L "https://github.com/tmux/tmux/releases/download/3.2a/tmux-3.2a.tar.gz" -o tmux-3.2a.tar.gz
+    # tar xzf tmux-3.2a.tar.gz
+    # cd tmux-3.2a
+    # ./configure && make -j 8 && sudo make install
+
+    # install tmux
+    echoContent green " ---> installing tmux"
+    command_exists tmux && {
+        echoContent green " ---> tmux have been installed, continue to configure tmux" 
+    }
+    command_exists tmux || {
         $installType tmux 1>/dev/null 2>>${errLogFile}
-        command_exists tmux || {
-            echoContent red " ---> tmux installation failed, see ${errLogFile} for details"
-            return
-        }
-
-        echoContent green " ---> configuring tmux"
-        [ ! -d $HOME/.tmux/plugins/tpm ] && {
-            git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 1>/dev/null 2>>${errLogFile}
-        }
-        [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak
-        \cp ${modernEnvHomeDir}/tmux.conf ~/.tmux.conf
-        tmux source ~/.tmux.conf
-        # cp /home/cmc/dev-env-setting/mux-airline-gruvbox-dark.conf ~/.tmux/
-
-        echoContent green "please enter tmux seesion and install tmux plugin with key stroke prefix-I"
-        echoContent green "common key binding: prefix+I for install plugin; prefix+U for udpate "
-
+    }
+    command_exists tmux || {
+        echoContent red " ---> tmux installation failed, see ${errLogFile} for details"
+        return
     }
 
-    installEnhancedTools() {
-        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
-        if [ ! -d ~/.fzf ]; then
-            git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-            ~/.fzf/install
-        else
-            echoContent green " ---> fzf directory already exists"
-        fi
+    echoContent green " ---> configuring tmux"
+    [ ! -d $HOME/.tmux/plugins/tpm ] && {
+        git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 1>/dev/null 2>>${errLogFile}
     }
+    [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak
+    \cp ${modernEnvHomeDir}/tmux.conf ~/.tmux.conf
+    tmux source ~/.tmux.conf
+    # cp /home/cmc/dev-env-setting/mux-airline-gruvbox-dark.conf ~/.tmux/
 
-    installGithub() {
-        echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
-        command_exists gh && echoContent green " ---> gh have been installed, nothing installed" && return
-        if [ "$distro" -eq "ubuntu" ]; then
-            type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg &&
-                sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg &&
-                echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null &&
-                sudo apt update &&
-                sudo apt install gh -y
-        elif [ $distro == "centos" ]; then
-            sudo dnf install 'dnf-command(config-manager)'
-            sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-            sudo dnf install gh
-        else
-            echoContent red " ---> you may need to install it mannually, \
-            see https://github.com/cli/cli/blob/trunk/docs/install_linux.md#fedora-centos-red-hat-enterprise-linux-dnf"
-        fi
-    }
+    echoContent green "please enter tmux seesion and install tmux plugin with key stroke prefix-I"
+    echoContent green "common key binding: prefix+I for install plugin; prefix+U for udpate "
 
-    # installBasicTools
-    installNVim
-    # installTmux
-    # installEnhancedTools
-    # installGithub
+}
+
+installEnhancedTools() {
+    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    if [ ! -d ~/.fzf ]; then
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+        ~/.fzf/install
+    else
+        echoContent green " ---> fzf directory already exists"
+    fi
+}
+
+installGithub() {
+    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    command_exists gh && echoContent green " ---> gh have been installed, nothing installed" && return
+    if [ "$distro" -eq "ubuntu" ]; then
+        type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg &&
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg &&
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null &&
+            sudo apt update &&
+            sudo apt install gh -y
+    elif [ $distro == "centos" ]; then
+        sudo dnf install 'dnf-command(config-manager)'
+        sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+        sudo dnf install gh
+    else
+        echoContent red " ---> you may need to install it mannually, \
+                                                see https://github.com/cli/cli/blob/trunk/docs/install_linux.md#fedora-centos-red-hat-enterprise-linux-dnf"
+    fi
 }
 
 # install ohmyzsh
 setupShell() {
 
     echoContent green " ---> installing zsh and ohmyzsh"
-    command_exists zsh && echoContent green " ---> zsh have been installed, nothing installed"
+    command_exists zsh && echoContent green " ---> zsh have been installed, continue to configure"
     command_exists zsh || {
         ${installType} zsh >/dev/null 2>>${errLogFile}
     }
@@ -385,20 +406,20 @@ setupShell() {
     if [ -d ~/.oh-my-zsh ]; then
         echoContent green " ---> ohmyzsh directory already exists"
     else
-        execute_with_timeout "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 60 "Network timeout when installing ohmyzsh"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
         chsh -s /usr/bin/zsh
     fi
 
     echoContent green " ------------> installing auto suggestion "
     if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-        execute_with_timeout "git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 60 "Network timeout when cloning zsh-autosuggestions"
+        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
     else
         echoContent green " ---> zsh-autosuggestions directory already exists"
     fi
 
     echoContent green " ------------> installing auto suggestion "
     if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
-        execute_with_timeout "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 60 "Network timeout when cloning zsh-syntax-highlighting"
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
     else
         echoContent green " ---> zsh-syntax-highlighting directory already exists"
     fi
@@ -421,11 +442,13 @@ setupShell() {
     \sed -ri 's~((plugins=.*)~\1\nplugins+=(zsh-autosuggestions yum git extract tmux golang zsh-syntax-highlighting colored-man-pages colorize pip sudo httpie gitignore zsh-z autojump \3~g' ~/.zshrc
 
     sudo \cp ${modernEnvHomeDir}/global_aliases /etc/
-    sudo \cp ${modernEnvHomeDir}/$shellProfile /etc/
+    sudo \cp ${modernEnvHomeDir}/zshrc $HOME/
     echo "source /etc/global_aliases" >>$shellProfile
 
     source $shellProfile
 }
+
+############################# setup dev tools #############################
 
 # install programming language environment, based on your choice
 setupProgLang() {
@@ -732,137 +755,137 @@ setupProgLang() {
 }
 
 # 开发环境配置
-setupDevEnv() {
 
-    installDocker() {
+installDocker() {
 
-        command_exists docker &&
-            echoContent green " ---> docker have been installed, nothing installed" && return
+    command_exists docker &&
+        echoContent green " ---> docker have been installed, nothing installed" && return
 
-        command_exists docker || {
-            pushd /tmp
-            echoContent green " ---> installing docker"
-            curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
-            sudo sh get-docker.sh
-            popd
-        }
+    command_exists docker || {
+        pushd /tmp
+        echoContent green " ---> installing docker"
+        curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
+        sudo sh get-docker.sh
+        popd
+    }
 
-        command_exists docker || {
-            echoContent red " ---> docker installtion failed, see ${errLogFile} for details"
-            return
-        }
+    command_exists docker || {
+        echoContent red " ---> docker installtion failed, see ${errLogFile} for details"
+        return
+    }
 
-        iswsl2=$(uname -r | grep -io wsl2)
-        if [ -n "$iswsl2" ]; then
-            echoContent red \
-                " ---> It seems your system is wsl2, please check your C:\Users\yourname\.wslconfig file \
+    iswsl2=$(uname -r | grep -io wsl2)
+    if [ -n "$iswsl2" ]; then
+        echoContent red \
+            " ---> It seems your system is wsl2, please check your C:\Users\yourname\.wslconfig file \
                                         to see if it have enabled mirror network mode, if so, \
                                         you'll have to add the following key-value to /etc/docker/daemon.json, \
                                     then reload it to make it effective \
                                         with command 'sudo systemctl daemon-reload && sudo systemctl restart docker', see \
                                         https://github.com/microsoft/WSL/issues/10494"
-            echo '"iptables": false'
-        fi
+        echo '"iptables": false'
+    fi
 
-        # config user authorization so that non root user directly use docker command
-        echoCOntent green " ---> configuring docker user authorization, in order to run \
+    # config user authorization so that non root user directly use docker command
+    echoCOntent green " ---> configuring docker user authorization, in order to run \
             docker command without sudo:w"
-        sudo groupadd docker
-        gpasswd -a ${USER} docker
-        sudo systemctl restart docker
-        sudo chmod a+rw /var/run/docker.sock
+    sudo groupadd docker
+    gpasswd -a ${USER} docker
+    sudo systemctl restart docker
+    sudo chmod a+rw /var/run/docker.sock
+}
+
+installNodejsByNvm() {
+    command_exists node &&
+        echoContent green " ---> nodejs have been installed, nothing installed" && return
+
+    command_exists node || {
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
+        nvm install node
+        nvm use node
     }
 
-    installNodejsByNvm() {
-        command_exists node &&
-            echoContent green " ---> nodejs have been installed, nothing installed" && return
-
-        command_exists node || {
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
-            nvm install node
-            nvm use node
-        }
-
-        command_exists node || {
-            echoContent red " ---> nodejs installtion failed, see ${errLogFile} for details"
-            return
-        }
+    command_exists node || {
+        echoContent red " ---> nodejs installtion failed, see ${errLogFile} for details"
+        return
     }
+}
 
-    k8s() {
+k8s() {
 
-        # 镜像源配置
-        proxychains4 wget
-        sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    # 镜像源配置
+    proxychains4 wget
+    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 
-        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        sudo install minikube-linux-amd64 /usr/local/bin/minikube
-        sudo apt-get install -y conntrack
+    curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    sudo install minikube-linux-amd64 /usr/local/bin/minikube
+    sudo apt-get install -y conntrack
 
-        # install cri-dockerd
-        git clone https://github.com/Mirantis/cri-dockerd.git
-        cd cri-dockerd
-        mkdir bin
-        go get && go build -o bin/cri-dockerd
-        mkdir -p /usr/local/bin
-        install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
-        cp -a packaging/systemd/* /etc/systemd/system
-        sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
-        systemctl daemon-reload
-        systemctl enable cri-docker.service
-        systemctl enable --now cri-docker.socket
+    # install cri-dockerd
+    git clone https://github.com/Mirantis/cri-dockerd.git
+    cd cri-dockerd
+    mkdir bin
+    go get && go build -o bin/cri-dockerd
+    mkdir -p /usr/local/bin
+    install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+    cp -a packaging/systemd/* /etc/systemd/system
+    sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+    systemctl daemon-reload
+    systemctl enable cri-docker.service
+    systemctl enable --now cri-docker.socket
 
-        sudo minikube start --driver='none' --image-mirror-country='cn' --image-repository='registry.cn-hangzhou.aliyuncs.com/google_containers'
+    sudo minikube start --driver='none' --image-mirror-country='cn' --image-repository='registry.cn-hangzhou.aliyuncs.com/google_containers'
 
-        # npm 源配置
-        npm config set registry http://mirrors.cloud.tencent.com/npm/
-        # npm config get registry
-        # 如果返回http://mirrors.cloud.tencent.com/npm/，说明镜像配置成功。
+    # npm 源配置
+    npm config set registry http://mirrors.cloud.tencent.com/npm/
+    # npm config get registry
+    # 如果返回http://mirrors.cloud.tencent.com/npm/，说明镜像配置成功。
 
-    }
+}
 
-    installCommonDevLib() {
+installCommonDevLib() {
 
-        # 常见库配置
-        echoContent green " ----> installing libgeoip1"
-        ${installType} libgeoip1 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing libgeoip-dev"
-        ${installType} libgeoip-dev 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing openssl"
-        ${installType} openssl 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing libcurl3-dev"
-        ${installType} libcurl3-dev 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing libssl-dev"
-        ${installType} libssl-dev 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing php"
-        ${installType} php 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing net-tools"
-        ${installType} net-tools 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing ifupdown"
-        ${installType} ifupdown 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing tree"
-        ${installType} tree 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing cloc"
-        ${installType} cloc 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing python3-pip"
-        ${installType} python3-pip 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing gcc"
-        ${installType} gcc 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing gdb"
-        ${installType} gdb 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing g++"
-        ${installType} g++ 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing locate"
-        ${installType} locate 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing shellcheck"
-        ${installType} shellcheck 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing redis-cli"
-        ${installType} redis-cli 1>/dev/null 2>>${errLogFile}
-        echoContent green " ----> installing redis-server"
-        ${installType} redis-server 1>/dev/null 2>>${errLogFile}
+    # 常见库配置
+    echoContent green " ----> installing libgeoip1"
+    ${installType} libgeoip1 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing libgeoip-dev"
+    ${installType} libgeoip-dev 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing openssl"
+    ${installType} openssl 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing libcurl3-dev"
+    ${installType} libcurl3-dev 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing libssl-dev"
+    ${installType} libssl-dev 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing php"
+    ${installType} php 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing net-tools"
+    ${installType} net-tools 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing ifupdown"
+    ${installType} ifupdown 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing tree"
+    ${installType} tree 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing cloc"
+    ${installType} cloc 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing python3-pip"
+    ${installType} python3-pip 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing gcc"
+    ${installType} gcc 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing gdb"
+    ${installType} gdb 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing g++"
+    ${installType} g++ 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing locate"
+    ${installType} locate 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing shellcheck"
+    ${installType} shellcheck 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing redis-cli"
+    ${installType} redis-cli 1>/dev/null 2>>${errLogFile}
+    echoContent green " ----> installing redis-server"
+    ${installType} redis-server 1>/dev/null 2>>${errLogFile}
 
-    }
+}
 
+setupDevEnv() {
     installDocker
 }
 
@@ -1313,15 +1336,37 @@ checkWgetShowProgress() {
     fi
 }
 
+setupSepcificTool() {
+    echoContent red "==================== BASIC TOOLS ======================="
+    echoContent yellow "1. setup ohmyzsh"
+    echoContent yellow "2. setup neovim"
+    echoContent yellow "3. setup tmux"
+    echoContent red "==================== DEV TOOLS ======================="
+    echoContent yellow "4. setup neovim"
+    echoContent yellow "5. setup basic tools"
+
+    read -r -p "请输入要安装的工具名称:" toolName
+    case ${toolName} in
+    1)
+        setupShell
+        ;;
+    2)
+        setupNeovim
+        ;;
+    3)
+        setupTmux
+        ;;
+    esac
+}
+
 # 主菜单
 menu() {
 
-    cd "$HOME" || exit
     echoContent red "\n=============================================================="
     echoContent green "作者：russel"
     echoContent green "当前版本：v0.1"
     echoContent green "Github：https://github.com/RussellLoveCoding"
-    echoContent green "描述: Linux 初始化\c"
+    echoContent green "描述: Linux 初始化\n"
     checkWgetShowProgress
     echoContent red "=============================================================="
     echoContent yellow "1. setup shell"
@@ -1331,8 +1376,8 @@ menu() {
     echoContent yellow "5. setup disk"
     echoContent yellow "6. setup network"
     echoContent yellow "7. setup data intensive app server dependencies: including hadoop, zookeeper"
+    echoContent yellow "8. setup specific tool"
     echoContent red "=============================================================="
-    mkdirTools
 
     read -r -p "请选择:" selectInstallType
     case ${selectInstallType} in
@@ -1357,16 +1402,20 @@ menu() {
     7)
         setupDataIntensiveAppServerDependencies
         ;;
+    8)
+        setupSepcificTool
+        ;;
     esac
 }
+
 # printHeader
-# menu
 
 # tmptestfile="/tmp/tmptestfile"
 # echo "line1" > $tmptestfile
 # Call the function with a line that does not exist in the file
 # checkAndAddLine $tmptestfile "line2"
 init
-setupShell
+menu
+# setupShell
 # setupBasicTools
-setupDevEnv
+# setupDevEnv
