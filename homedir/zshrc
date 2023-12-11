@@ -192,7 +192,7 @@ fi
 # Add wisely, as too many plugins slow down shell startup.
 plugins+=(git tmux zsh-autosuggestions docker kubectl golang yum docker-compose)
 plugins+=(colored-man-pages colorize pip httpie gitignore yarn zsh-syntax-highlighting)
-plugins+=(zsh-z autojump tmux gcloud doctl) # 
+plugins+=(zsh-z tmux gcloud doctl) # autojump 
 
 # let tmux alias have -u option
 ZSH_TMUX_UNICODE=true

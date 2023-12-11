@@ -21,6 +21,9 @@ endfunction
 " PLUGIN_BEGIN_MARKER 
 
 """"""""""""""""""""
+Plug 'github/copilot.vim'
+ 
+""""""""""""""""""""
 Plug 'projekt0n/github-nvim-theme'
 
 
