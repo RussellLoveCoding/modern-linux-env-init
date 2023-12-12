@@ -97,6 +97,24 @@ checkAndAddLine() {
     fi
 }
 
+unalias_list() {
+    if alias | \grep -Eq '^grep'; then
+        unalias grep
+    fi
+
+    if alias | \grep -Eq '^cp'; then
+        unalias cp
+    fi
+
+    if alias | \grep -Eq '^rm'; then
+        unalias rm
+    fi
+
+    if alias | \grep -Eq '^mv'; then
+        unalias mv
+    fi
+}
+
 init() {
 
     test=0
@@ -113,9 +131,9 @@ init() {
     modernEnvHomeDir="${modernEnvPath}/homedir"
 
     # command redefinition, in case alias
-    installType='apt -y install'
-    removeType='apt -y remove'
-    upgrade="apt -y update"
+    installType='sudo apt -y install'
+    removeType='sudo apt -y remove'
+    upgrade="sudo apt -y update"
 
     optdir="$HOME/opt"
     sed="\sed"
@@ -171,7 +189,53 @@ init() {
     # fetch necessary configuration file.
     [ -d $modernEnvPath ] || {
         echoContent green " --> fetching necessary configuration file from github"
-        git clone https://github.com/RussellLoveCoding/modern-linux-env-init.git $modernEnvPath 1>/dev/null
+        git clone https://github.com/RussellLoveCoding/modern-linux-env-init.git $modernEnvPath 1>/dev/null 2>&1
     }
 }
+
+# according to config.yml file, generate .zshrc file correctly, including pyenv, nvm, fzf and so on.
+# such as pyenv
+# export PYENV_ROOT="$HOME/.pyenv"
+# [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+# if command -v pyenv 1>/dev/null 2>&1; then
+#     eval "$(pyenv init -)"
+# fi
+
+genShellProfile() {
+    for pkg in pyenv; do
+        cat $pkg.template >>$shellProfile
+
+        #
+    done
+}
+
+check_network() {
+    if curl -s --head --request GET https://www.baidu.com | grep "200 OK" >/dev/null; then
+        echo "baidu.com is reachable"
+    else
+        echo "baidu.com is not reachable"
+        echo "please check your network"
+        exit 1
+    fi
+
+    if curl -s --head --request GET https://www.github.com | grep "200 OK" >/dev/null; then
+        echo "github.com is reachable"
+    else
+        echo "github.com is not reachable"
+        echo "please check your network"
+        exit 1
+    fi
+
+    if curl -s --head --request GET https://www.google.com | grep "200 OK" >/dev/null; then
+        echo "google.com is reachable"
+    else
+        echo "google.com is not reachable"
+        echo "please check your network"
+        echo "you maybe encounter some network timeout during the course of setup"
+    fi
+}
+
+# check_network
 init
+unalias_list
+$installType dialog 1>/dev/null

@@ -2,6 +2,11 @@
 set -e
 source common.sh
 
+installPkgBundle() {
+    $upgrade
+    $installType libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev
+}
+
 installGithub() {
     # echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     command_exists gh && echoContent green " ---> gh have been installed, nothing installed" && return
@@ -34,15 +39,46 @@ installGithub() {
     esac
 }
 
+uninstallGithub() {
+    command_exists gh || return
+    case "$distro" in
+    "centos")
+        sudo dnf remove gh
+        sudo dnf config-manager --disable gh-cli
+        sudo dnf remove 'dnf-command(config-manager)'
+        ;;
+    "debian")
+        sudo apt remove gh
+        sudo rm /usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo rm /etc/apt/sources.list.d/github-cli.list
+        ;;
+    "ubuntu")
+        sudo apt remove gh
+        sudo rm /usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo rm /etc/apt/sources.list.d/github-cli.list
+        ;;
+    *)
+        echoContent red " ---> you may need to uninstall it mannually"
+        ;;
+    esac
+    if command_exists gh; then
+        echoContent red " ---> uninstall gh failed, see ${errLogFile} for details"
+    else
+        echoContent green " ---> gh have been uninstalled"
+    fi
+}
+
 # install programming language environment, based on your choice
 
-installBash() {
+installBatscore() {
     # unittest tool
     echoContent green " ---> installing bash unit test tool: bats"
     pushd /tmp
     git clone https://github.com/bats-core/bats-core.git
     cd bats-core
-    sudo ./install.sh $globalInstallDir 1>/dev/null 2>>${errLogFile}
+    sudo ./install.sh $globalInstallDir 1>/dev/null
+    cd ..
+    rm -rf bats-core
     popd
 
     command_exists bats || {
@@ -51,40 +87,46 @@ installBash() {
     }
 }
 
-installPython() {
+uninstallBatscore() {
+    curl -s -S -L https://raw.githubusercontent.com/bats-core/bats-core/master/uninstall.sh | bash 1>/dev/null
+}
+
+installPythonByPyenv() {
 
     # install pyenv
     echoContent green " ---> installing pyenv"
 
+    # Here on centos distribution, packages name might be slightly different.
     command_exists pyenv && {
         echoContent green " ---> pyenv have been installed, nothing installed"
     }
 
-    if ! command_exists pyenv {
+    if ! command_exists pyenv; then
         echoContent green " ---> setting up pyenv, add env var to $shellProfile"
-        curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash  1>/dev/null 2>>${errLogFile}
-
-        # TODO
-        echo "" >$shellProfile
-        echo "" >$shellProfile
-        # 不知道这样对不对，需要转义字符不， TODO
-        checkAndAddLine "export PATH=/usr/local/bin:\$PATH" "$shellProfile"
-        checkAndAddLine '########## pyenv config' $shellProfile
-        checkAndAddLine 'export PYENV_ROOT="$HOME/.pyenv"' $shellProfile
-        checkAndAddLine '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' $shellProfile
-        checkAndAddLine 'eval "$(pyenv init -)"' $shellProfile
-        source $shellProfile
-    }
+        curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash 1>/dev/null
+        echoContent green " ----> you need to manually add pyenv source code to shell profile and then rerun this script"
+        exit 0
+    fi
 
     command_exists pyenv || {
         echoContent red " ---> pyenv installtion failed, python have not been installed, see ${errLogFile} for details"
         return
     }
 
-    latestVersion=$(pyenv install --list | grep -v - | grep -v b | tail -2 | head -1)
-    # install
-    pyenv install ${latestVersion}
-    pyenv global ${latestVersion}
+    # installing the necessary dependencies for building Python, since Python from source code
+    # if you run `pyenv install version`
+
+    # install latest python version
+    $upgrade 1>/dev/null
+    ${installType} libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev 1>/dev/null
+    if [ ! -d "$(pyenv root)"/plugins/pyenv-install-latest ]; then
+        git clone https://github.com/momo-lab/pyenv-install-latest.git "$(pyenv root)"/plugins/pyenv-install-latest
+    fi
+    latest_version=$(pyenv versions | tail -1 | sed 's/ //g')
+    latestVersion=$(pyenv install --list | \grep -v - | \grep -v b | tail -2 | head -1) # avoiding using grep alias outputing line number
+    pyenv install-latest
+    pyenv global $latestVersion
+    pip install --upgrade pip 1>/dev/null
 
     # configure
     echoContent green """ ---> setting up python, you can choose your own pip mirror site by
@@ -94,7 +136,7 @@ installPython() {
 
     echoContent green " ---> installing ipython: an interactive shell with syntax-highlighting for python"
     command_exists ipython && echoContent green " ---> ipython have been installed, nothing installed"
-    command_exists ipython || pip install ipython 1>/dev/null 2>>${errLogFile}
+    command_exists ipython || pip install ipython 1>/dev/null
     command_exists ipython || echoContent red " ---> ipython installation failed, see ${errLogFile} for details"
 
     echoContent green """ ---> installing common python packages, including:
@@ -112,18 +154,18 @@ installPython() {
         python-dateutil
         """
 
-    pip install lxml >/dev/null 2>&1
-    pip install ipaddress >/dev/null 2>&1
-    pip install python-dateutil >/dev/null 2>&1
-    pip install apscheduler >/dev/null 2>&1
-    pip install mycli >/dev/null 2>&1
-    pip install aiohttp >/dev/null 2>&1
-    pip install datetime >/dev/null 2>&1
-    pip install timeit >/dev/null 2>&1
-    pip install docker-compose >/dev/null 2>&1
-    pip install chardet >/dev/null 2>&1
-    pip install supervisor >/dev/null 2>&1
-    pip install python-dateutil >/dev/null 2>&1
+    pip install lxml >/dev/null
+    pip install ipaddress >/dev/null
+    pip install python-dateutil >/dev/null
+    pip install apscheduler >/dev/null
+    pip install mycli >/dev/null
+    pip install aiohttp >/dev/null
+    pip install datetime >/dev/null
+    pip install timeit >/dev/null
+    pip install docker-compose >/dev/null
+    pip install chardet >/dev/null
+    pip install supervisor >/dev/null
+    pip install python-dateutil >/dev/null
 
     ############## pyenv 使用 ##############
     ## pyenv安装不同版的python
@@ -142,98 +184,93 @@ installPython() {
     ############## pyenv 使用 ##############
 }
 
-# 未完成
 removePython() {
-    echoContent green " ---> are you sure you want to uninstall python? [y/n]"
-    read answer
-    if [ "$answer" != "${answer#[Yy]}" ]; then
-        echo "uninstalling pyenv and everything related, which is rm -rf ~/.pyenv"
-        rm -rf ~/.pyenv
-        \sed -rin '/########## pyenv config/d' $shellProfile
-        \sed -rin '/export PYENV_ROOT/d' $shellProfile
-        \sed -rin '/\[\[ \- \$PYENV_ROOT\/bin \]\] && export/d' $shellProfile
-        \sed -rin '/eval "\$\(pyenv init \-\)"/d' $shellProfile
-    else
-        echo "aborted" fi
-    fi
+    # The simplicity of pyenv makes it easy to temporarily disable it, or uninstall from the system.
+    # 1. To disable Pyenv managing your Python versions, simply remove the pyenv init invocations from your shell startup configuration. This will remove Pyenv shims directory from PATH, and future invocations like python will execute the system Python version, as it was before Pyenv.
+    # pyenv will still be accessible on the command line, but your Python apps won't be affected by version switching.
+    # 2. To completely uninstall Pyenv, remove all Pyenv configuration lines from your shell startup configuration, and then remove its root directory. This will delete all Python versions that were installed under the $(pyenv root)/versions/ directory:
+    # rm -rf $(pyenv root)
+    rm -rf $(pyenv root)
 }
 
 installGolang() {
 
     echoContent green " ---> installing golang programming language environment"
     echoContent green " ---> Downloading golang package"
-    command_exists go && {
+    if command_exists go; then
         echoContent green " ---> golang have been installed, nothing installed"
-        return
-    }
-    pushd /tmp
-    case $os in
-    "linux")
-        case $arch in
-        "amd64")
-            archVariant=amd64
+        continue to configure
+    else
+        pushd /tmp
+        case $os in
+        "linux")
+            case $arch in
+            "amd64")
+                archVariant=amd64
+                ;;
+            "x86_64")
+                archVariant=amd64
+                ;;
+            "aarch64")
+                archVariant=arm64
+                ;;
+            "armv6" | "armv7l")
+                archVariant=armv6l
+                ;;
+            "armv8")
+                archVariant=arm64
+                ;;
+            "i686")
+                archVariant=386
+                ;;
+            .*386.*)
+                archVariant=386
+                ;;
+            esac
+            platform="linux-$archVariant"
             ;;
-        "x86_64")
-            archVariant=amd64
-            ;;
-        "aarch64")
-            archVariant=arm64
-            ;;
-        "armv6" | "armv7l")
-            archVariant=armv6l
-            ;;
-        "armv8")
-            archVariant=arm64
-            ;;
-        "i686")
-            archVariant=386
-            ;;
-        .*386.*)
-            archVariant=386
+        "Darwin")
+            case $arch in
+            "x86_64")
+                archVariant=amd64
+                ;;
+            "arm64")
+                archVariant=arm64
+                ;;
+            esac
+            platform="darwin-$archVariant"
             ;;
         esac
-        platform="linux-$archVariant"
-        ;;
-    "Darwin")
-        case $arch in
-        "x86_64")
-            archVariant=amd64
-            ;;
-        "arm64")
-            archVariant=arm64
-            ;;
-        esac
-        platform="darwin-$archVariant"
-        ;;
-    esac
 
-    if [ -z "$platform" ]; then
-        echo "Your operating system is not supported by the script."
-        return
+        if [ -z "$platform" ]; then
+            echo "Your operating system is not supported by the script."
+            return
+        fi
+
+        version=$(curl -Ls https://golang.org/dl/ |
+            grep -oP 'go([0-9\.]+)\.linux-amd64\.tar\.gz' |
+            grep -oP 'go[0-9\.]+' |
+            head -n 1 |
+            sed 's/.$//')
+
+        packageName=$(curl -Ls https://go.dev/dl | grep -oP "go([0-9\.]+)\.${os}-${archVariant}\.tar\.gz" | head -n 1)
+
+        if [ -z "$packageName" ]; then
+            echoContent red \
+                " ---> golang doesn't not support your system and architecture: ${os}-${archVariant}, nothing installed"
+            return
+        fi
+
+        curl -LsSO "https://golang.org/dl/${packageName}"
+        sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${packageName}
+        popd
+
+        command_exists go || {
+            echoContent red " ---> golang installtion failed, see ${errLogFile} for details"
+            return
+        }
+
     fi
-
-    version=$(curl -Ls https://golang.org/dl/ |
-        grep -oP 'go([0-9\.]+)\.linux-amd64\.tar\.gz' |
-        grep -oP 'go[0-9\.]+' |
-        head -n 1 |
-        sed 's/.$//')
-
-    packageName=$(curl -Ls https://go.dev/dl | grep -oP "go([0-9\.]+)\.${os}-${archVariant}\.tar\.gz" | head -n 1)
-    if [ -z "$packageName" ]; then
-        echoContent red \
-            " ---> golang doesn't not support your system and architecture: ${os}-${archVariant}, nothing installed"
-        return
-    fi
-
-    curl -LsSO "https://golang.org/dl/${packageName}"
-    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${packageName}
-    popd
-
-    command_exists go || {
-        echoContent red " ---> golang installtion failed, see ${errLogFile} for details"
-        return
-    }
-
     echoContent green " ---> setting up golang environment, including gopath: $HOME/projs, $HOME/go, installing gotools"
 
     for dir in ~/go/{bin,pkg,src}; do
@@ -243,84 +280,47 @@ installGolang() {
         [ ! -d "$dir" ] && mkdir -p "$dir"
     done
 
-    {
-        echo ""
-        echo ""
-    } >>$shellProfile
-
-    checkAndAddLine '########## golang config' $shellProfile
-    checkAndAddLine 'export GOROOT='/usr/local/go'' $shellProfile
-    checkAndAddLine 'export PATH=$PATH:$GOROOT/bin' $shellProfile
-    checkAndAddLine 'export GOPATH=$HOME/go:$HOME/projs' $shellProfile
-    checkAndAddLine 'export GOPROXY=direct' $shellProfile
-
-    source $shellProfile
-
-    go install -v github.com/mdempsky/gocode@latest
-    go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest
-    go install -v github.com/ramya-rao-a/go-outline@latest
-    go install -v github.com/acroca/go-symbols@latest
-    go install -v golang.org/x/tools/cmd/guru@latest
-    go install -v golang.org/x/tools/cmd/gorename@latest
-    go install -v github.com/go-delve/delve/cmd/dlv@latest
-    go install -v github.com/stamblerre/gocode@latest
-    go install -v github.com/rogpeppe/godef@latest
-    go install -v github.com/sqs/goreturns@latest
-    go install -v golang.org/x/lint/golint@latest
-    go install -v github.com/cweill/gotests/...@latest
-    go install -v github.com/fatih/gomodifytags@latest
-    go install -v github.com/josharian/impl@latest
-    go install -v github.com/davidrjenni/reftools/cmd/fillstruct@latest
-    go install -v github.com/haya14busa/goplay/cmd/goplay@latest
-    go install -v github.com/godoctor/godoctor@latest
+    echoContent green " ---> installing gotools"
+    go install -v github.com/mdempsky/gocode@latest 1>/dev/null 2>&1
+    go install -v github.com/uudashr/gopkgs/v2/cmd/gopkgs@latest 1>/dev/null 2>&1
+    go install -v github.com/ramya-rao-a/go-outline@latest 1>/dev/null 2>&1
+    go install -v github.com/acroca/go-symbols@latest 1>/dev/null 2>&1
+    go install -v golang.org/x/tools/cmd/guru@latest 1>/dev/null 2>&1
+    go install -v golang.org/x/tools/cmd/gorename@latest 1>/dev/null 2>&1
+    go install -v github.com/go-delve/delve/cmd/dlv@latest 1>/dev/null 2>&1
+    go install -v github.com/stamblerre/gocode@latest 1>/dev/null 2>&1
+    go install -v github.com/rogpeppe/godef@latest 1>/dev/null 2>&1
+    go install -v github.com/sqs/goreturns@latest 1>/dev/null 2>&1
+    go install -v golang.org/x/lint/golint@latest 1>/dev/null 2>&1
+    go install -v github.com/cweill/gotests/...@latest 1>/dev/null 2>&1
+    go install -v github.com/fatih/gomodifytags@latest 1>/dev/null 2>&1
+    go install -v github.com/josharian/impl@latest 1>/dev/null 2>&1
+    go install -v github.com/davidrjenni/reftools/cmd/fillstruct@latest 1>/dev/null 2>&1
+    go install -v github.com/haya14busa/goplay/cmd/goplay@latest 1>/dev/null 2>&1
+    go install -v github.com/godoctor/godoctor@latest 1>/dev/null 2>&1
 }
 
 uninstall_golang() {
     rm -rf "$GOROOT"
-    if [ "$os" == "Darwin" ]; then
-        if [ "$shell" == "fish" ]; then
-            sed -i "" '/# GoLang/d' "$shellProfile"
-            sed -i "" '/set GOROOT/d' "$shellProfile"
-            sed -i "" '/set GOPATH/d' "$shellProfile"
-            sed -i "" '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
-        else
-            sed -i "" '/# GoLang/d' "$shellProfile"
-            sed -i "" '/export GOROOT/d' "$shellProfile"
-            sed -i "" '/$GOROOT\/bin/d' "$shellProfile"
-            sed -i "" '/export GOPATH/d' "$shellProfile"
-            sed -i "" '/$GOPATH\/bin/d' "$shellProfile"
-        fi
-    else
-        if [ "$shell" == "fish" ]; then
-            sed -i '/# GoLang/d' "$shellProfile"
-            sed -i '/set GOROOT/d' "$shellProfile"
-            sed -i '/set GOPATH/d' "$shellProfile"
-            sed -i '/set PATH $GOPATH\/bin $GOROOT\/bin $PATH/d' "$shellProfile"
-        else
-            sed -i '/# GoLang/d' "$shellProfile"
-            sed -i '/export GOROOT/d' "$shellProfile"
-            sed -i '/$GOROOT\/bin/d' "$shellProfile"
-            sed -i '/export GOPATH/d' "$shellProfile"
-            sed -i '/$GOPATH\/bin/d' "$shellProfile"
-        fi
-    fi
+    echoContent green "you need to remove environment variables in $shellProfile and 
+    remove go path, like ~/go, ~/projs manually, since this may contain important data"
 }
 
 install_java() {
     # ebuntu 一键配置JDK环境
     echo -e "开始安装Java"
-    apt-get install python-software-properties >/dev/null 2>&1
-    add-apt-repository ppa:linuxuprising/java >/dev/null 2>&1
-    apt-get update >/dev/null 2>&1
-    apt-get install oracle-java8-installer >/dev/null 2>&1
-    apt install oracle-java8-set-default >/dev/null 2>&1
+    apt-get install python-software-properties >/dev/null
+    add-apt-repository ppa:linuxuprising/java >/dev/null
+    apt-get update >/dev/null
+    apt-get install oracle-java8-installer >/dev/null
+    apt install oracle-java8-set-default >/dev/null
 
     # 手动配置 java
-    if command -v java >/dev/null 2>&1; then
-        test
+    if command -v java >/dev/null; then
+        echo yes
     else
         echo -e "自动安装Java失败，将切换为手动安装"
-        # wget https://github.com/al0ne/LinuxCheck/raw/master/rkhunter.tar.gz >/dev/null 2>&1
+        # wget https://github.com/al0ne/LinuxCheck/raw/master/rkhunter.tar.gz >/dev/null
         # tar -xzvf jdk.tar.gz
         # mv jdk1.8.0_251 /opt
         # echo "export JAVA_HOME=/opt/jdk1.8.0_251" >>~/.zshrc
@@ -345,7 +345,7 @@ installDocker() {
     command_exists docker || {
         pushd /tmp
         echoContent green " ---> installing docker"
-        curl -fsSL https://get.docker.com -o get-docker.sh 2>>${errLogFile} 1>/dev/null
+        curl -fsSL https://get.docker.com -o get-docker.sh
         sudo sh get-docker.sh
         popd
     }
@@ -371,25 +371,45 @@ installDocker() {
     echoCOntent green " ---> configuring docker user authorization, in order to run \
             docker command without sudo:w"
     sudo groupadd docker
-    gpasswd -a ${USER} docker
+    sudo gpasswd -a ${USER} docker
     sudo systemctl restart docker
     sudo chmod a+rw /var/run/docker.sock
 }
 
-installNodejsByNvm() {
-    command_exists node &&
-        echoContent green " ---> nodejs have been installed, nothing installed" && return
+uninstallDocker() {
+    # Images, containers, volumes, and networks stored in /var/lib/docker/
+    # aren't automatically removed when you uninstall Docker. If you want to
+    # start with a clean installation, and prefer to clean up any existing data,
+    # read the uninstall Docker Engine section.
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+    echoContent green "Images, containers, volumes, and networks stored in /var/lib/docker/ 
+    aren't automatically removed when you uninstall Docker. If you want to start 
+    with a clean installation, and prefer to clean up any existing data, 
+    read the uninstall Docker Engine section."
+}
 
-    command_exists node || {
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
+installNodejsByNvm() {
+    # remove the default nodejs with old version
+    if dpkg -S $(which node) &>/dev/null; then
+        $removeType nodejs
+    fi
+
+    if command_exists node; then
+        echoContent green " ---> nodejs have been installed, nothing installed" && return
+    else
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash 1>/dev/null 2>>${errLogFile}
         nvm install node
         nvm use node
-    }
+    fi
 
     command_exists node || {
         echoContent red " ---> nodejs installtion failed, see ${errLogFile} for details"
         return
     }
+}
+
+uninstallNvm() {
+    rm -rf "$NVM_DIR"
 }
 
 installK8s() {
@@ -428,70 +448,67 @@ installCommonDevLib() {
 
     # 常见库配置
     echoContent green " ----> installing libgeoip1"
-    ${installType} libgeoip1 1>/dev/null 2>>${errLogFile}
+    ${installType} libgeoip1 1>/dev/null
     echoContent green " ----> installing libgeoip-dev"
-    ${installType} libgeoip-dev 1>/dev/null 2>>${errLogFile}
+    ${installType} libgeoip-dev 1>/dev/null
     echoContent green " ----> installing openssl"
-    ${installType} openssl 1>/dev/null 2>>${errLogFile}
+    ${installType} openssl 1>/dev/null
     echoContent green " ----> installing libcurl3-dev"
-    ${installType} libcurl3-dev 1>/dev/null 2>>${errLogFile}
+    ${installType} libcurl3-dev 1>/dev/null
     echoContent green " ----> installing libssl-dev"
-    ${installType} libssl-dev 1>/dev/null 2>>${errLogFile}
+    ${installType} libssl-dev 1>/dev/null
     echoContent green " ----> installing php"
-    ${installType} php 1>/dev/null 2>>${errLogFile}
+    ${installType} php 1>/dev/null
     echoContent green " ----> installing net-tools"
-    ${installType} net-tools 1>/dev/null 2>>${errLogFile}
+    ${installType} net-tools 1>/dev/null
     echoContent green " ----> installing ifupdown"
-    ${installType} ifupdown 1>/dev/null 2>>${errLogFile}
+    ${installType} ifupdown 1>/dev/null
     echoContent green " ----> installing tree"
-    ${installType} tree 1>/dev/null 2>>${errLogFile}
+    ${installType} tree 1>/dev/null
     echoContent green " ----> installing cloc"
-    ${installType} cloc 1>/dev/null 2>>${errLogFile}
+    ${installType} cloc 1>/dev/null
     echoContent green " ----> installing python3-pip"
-    ${installType} python3-pip 1>/dev/null 2>>${errLogFile}
+    ${installType} python3-pip 1>/dev/null
     echoContent green " ----> installing gcc"
-    ${installType} gcc 1>/dev/null 2>>${errLogFile}
+    ${installType} gcc 1>/dev/null
     echoContent green " ----> installing gdb"
-    ${installType} gdb 1>/dev/null 2>>${errLogFile}
+    ${installType} gdb 1>/dev/null
     echoContent green " ----> installing g++"
-    ${installType} g++ 1>/dev/null 2>>${errLogFile}
+    ${installType} g++ 1>/dev/null
     echoContent green " ----> installing locate"
-    ${installType} locate 1>/dev/null 2>>${errLogFile}
+    ${installType} locate 1>/dev/null
     echoContent green " ----> installing shellcheck"
-    ${installType} shellcheck 1>/dev/null 2>>${errLogFile}
+    ${installType} shellcheck 1>/dev/null
     echoContent green " ----> installing redis-cli"
-    ${installType} redis-cli 1>/dev/null 2>>${errLogFile}
+    ${installType} redis-cli 1>/dev/null
     echoContent green " ----> installing redis-server"
-    ${installType} redis-server 1>/dev/null 2>>${errLogFile}
+    ${installType} redis-server 1>/dev/null
 
 }
 
 setupServerEnv() {
-    installPython
+    installPythonByPyenv
     installGolang
     install_mysql
-    installBash
+    installBatscore
     installNodejsByNvm
     installRedis
     installDocker
     # installk8s
 }
 
+install_scala() {
+    wget https://downloads.lightbend.com/scala/2.12.15/scala-2.12.15.rpm
+    curl -L --output $TMPDIR/scala-2.12.15.rpm https://downloads.lightbend.com/scala/2.12.15/scala-2.12.15.rpm
+    sudo yum install $TMPDIR/scala-2.12.15.rpm
+    rm $TMPDIR/scala-2.12.15.rpm
+}
 
-setupDataIntensiveAppServerDependencies() {
-
-    install_scala() {
-        wget https://downloads.lightbend.com/scala/2.12.15/scala-2.12.15.rpm
-        curl -L --output $TMPDIR/scala-2.12.15.rpm https://downloads.lightbend.com/scala/2.12.15/scala-2.12.15.rpm
-        sudo yum install $TMPDIR/scala-2.12.15.rpm
-        rm $TMPDIR/scala-2.12.15.rpm
-    }
-
-    install_java() {
-        # java8 用于跟hadoop 配合, java17(latest) 用于充当 java language server
-        # 到官网下载 java https://www.oracle.com/java/technologies/downloads/#java8
-        tar -C $HOME/opt -xzf $PACKAGE_DIR/jdk-8u311-linux-x64.tar.gz
-        tee -a $HOME/.zshrc >/dev/null <<EOT
+install_java() {
+    # java8 用于跟hadoop 配合, java17(latest) 用于充当 java language server
+    # 到官网下载 java https://www.oracle.com/java/technologies/downloads/#java8
+    tar -C $HOME/opt -xzf $PACKAGE_DIR/jdk-8u311-linux-x64.tar.gz
+    tee -a $HOME/.zshrc >/dev/null <<EOT
 # java jdk
 export JAVA_HOME=$HOME/opt/jdk1.8.0_311
 export JRE_HOME=$JAVA_HOME/jre
@@ -499,11 +516,11 @@ export PATH=$PATH:$JAVA_HOME/bin
 export CLASSPATH=./://$JAVA_HOME/lib:$JRE_HOME/lib
 EOT
 
-        # 安裝 maven
-        curl -L --output $TMPDIR/apache-maven-4.6.3-bin.tar.gz https://mirrors.aliyun.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-        tar -C $HOME/opt/ -xzf $TMPDIR/apache-maven-3.6.3-bin.tar.gz
+    # 安裝 maven
+    curl -L --output $TMPDIR/apache-maven-4.6.3-bin.tar.gz https://mirrors.aliyun.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+    tar -C $HOME/opt/ -xzf $TMPDIR/apache-maven-3.6.3-bin.tar.gz
 
-        tee -a $HOME/.zshrc >/dev/null <<EOT
+    tee -a $HOME/.zshrc >/dev/null <<EOT
 # java maven
 export M2_HOME=$HOME/opt/apache-maven-3.6.3
 export MAVEN_HOME=${M2_HOME}
@@ -511,9 +528,9 @@ export MAVEN_BIN=${M2_HOME}/bin/
 export PATH=${PATH}:${MAVEN_HOME}:${MAVEN_BIN}
 EOT
 
-        # 配置鏡像源
-        tmpfile=$(mktemp)
-        tee $tmpfile >>/dev/null <<EOT
+    # 配置鏡像源
+    tmpfile=$(mktemp)
+    tee $tmpfile >>/dev/null <<EOT
 <mirror>
     <id>aliyunmaven</id>
     <mirrorOf>*</mirrorOf>
@@ -521,112 +538,112 @@ EOT
     <url>https://maven.aliyun.com/repository/public</url>
 </mirror>
 EOT
-        sed -i "/<mirrors>/r $tmpfile" $HOME/opt/apache-maven-3.6.3/conf/settings.xml
-        \rm -rf $tmpfile
+    sed -i "/<mirrors>/r $tmpfile" $HOME/opt/apache-maven-3.6.3/conf/settings.xml
+    \rm -rf $tmpfile
 
-    }
+}
 
-    install_hadoop() {
-        # hadoop
-        export HADOOP_HOME=$HOME/opt/hadoop-2.10.1
-        export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-    }
+install_hadoop() {
+    # hadoop
+    export HADOOP_HOME=$HOME/opt/hadoop-2.10.1
+    export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+}
 
-    install_zookeeper() {
-        # curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3.tar.gz
-        curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
-        tar -C $OPT -xzf $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
-        tee -a ~/.zshrc >/dev/null <<EOT
+install_zookeeper() {
+    # curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3.tar.gz
+    curl -L "https://mirrors.aliyun.com/apache/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz" -o $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
+    tar -C $OPT -xzf $TMPDIR/apache-zookeeper-3.6.3-bin.tar.gz
+    tee -a ~/.zshrc >/dev/null <<EOT
 export ZOOKEEPER_HOME=$HOME/opt/apache-zookeeper-3.6.3
 export PATH=$PATH:$ZOOKEEPER_HOME/bin
 EOT
 
-        # 修改配置文件
-        cd $HOME/opt/apache-zookeeper-3.6.3/conf
-        cp zoo_sample.cfg zoo.cfg
-        dataDir="/tmp/zookeeper/data"
-        dataLogDir="/tmp/zookeeper/log"
-        mkdir $dataDir $dataLogDir
-        sed -i '/^data.*/d' zoo.cfg
-        tee -a zoo.cfg >/dev/null <<EOT
+    # 修改配置文件
+    cd $HOME/opt/apache-zookeeper-3.6.3/conf
+    cp zoo_sample.cfg zoo.cfg
+    dataDir="/tmp/zookeeper/data"
+    dataLogDir="/tmp/zookeeper/log"
+    mkdir $dataDir $dataLogDir
+    sed -i '/^data.*/d' zoo.cfg
+    tee -a zoo.cfg >/dev/null <<EOT
 dataDir=/tmp/zookeeper/data
 dataLogDir=/tmp/zookeeper/log
 EOT
 
-        # 配置服务器编号
-        echo 0 >$dataDir/myid
-    }
+    # 配置服务器编号
+    echo 0 >$dataDir/myid
+}
 
-    installRedis() {
-        # install server.
-        sudo apt update
-        sudo apt install -y redis redis-server
-        sudo systemctl start redis-server
+installRedis() {
+    # install server.
+    sudo apt update
+    sudo apt install -y redis redis-server
+    sudo systemctl start redis-server
 
-        curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-        sudo apt-get update
-        sudo apt-get install redis
+    curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+    sudo apt-get update
+    sudo apt-get install redis
 
-        curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-        sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-        sudo apt-get update
-        sudo apt-get install redis-stack-server
+    curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+    sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+    sudo apt-get update
+    sudo apt-get install redis-stack-server
 
-        # install iredis client with syntax highlight and auto completion
-        pip install iredis
-    }
+    # install iredis client with syntax highlight and auto completion
+    pip install iredis
+}
 
-    install_mysql() {
-        set -x
-        set -e
+install_mysql() {
+    set -x
+    set -e
 
-        # remove previous mysql  installation
-        echo remove previous mysql installation
-        rpm -qa | \grep mysql | xargs -n 1 -I _ sudo yum autoremove -y _
-        #sudo yum list installed | \grep mysql | awk '{print $1}'  | xargs sudo yum remove -y
-        if [ -f /etc/mysql ]; then
-            sudo rm /etc/mysql
-        fi
-        if [ -f /etc/my.cnf ]; then
-            sudo rm /etc/my.cnf
-        fi
-        if [ -f $HOME/.my.cnf ]; then
-            rm $HOME/.my.cnf
-        fi
+    # remove previous mysql  installation
+    echo remove previous mysql installation
+    rpm -qa | \grep mysql | xargs -n 1 -I _ sudo yum autoremove -y _
+    #sudo yum list installed | \grep mysql | awk '{print $1}'  | xargs sudo yum remove -y
+    if [ -f /etc/mysql ]; then
+        sudo rm /etc/mysql
+    fi
+    if [ -f /etc/my.cnf ]; then
+        sudo rm /etc/my.cnf
+    fi
+    if [ -f $HOME/.my.cnf ]; then
+        rm $HOME/.my.cnf
+    fi
 
-        cd $TMPDIR
+    cd $TMPDIR
 
-        # 在线安装
-        #wget https://dev.mysql.com/get/mysql80-community-release-el7-4.noarch.rpm # mysql8.x 版本提示缺库 lib.so glibc.2.28
-        #wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm # mysql 5.7 版本可安装
-        # 安装 mysql 源
-        #sudo yum localinstall mysql80-community-release-el8-2.noarch.rpm
-        sudo yum localinstall mysql80-community-release-el7-4.noarch.rpm # 查看启用的版本
-        sudo yum repolist enabled | grep "mysql.*-community.*"
-        # 查看启用的版本
-        sudo yum repolist enabled | grep mysql
-        # dependencies
-        sudo yum install libaio
-        # 安装mysql
-        sudo yum install mysql-community-server
-        # 查看是否安装成功
-        # 好像此方法可以用来查看工具是否安装成功
-        command -v mysql
-        mysql --version
+    # 在线安装
+    #wget https://dev.mysql.com/get/mysql80-community-release-el7-4.noarch.rpm # mysql8.x 版本提示缺库 lib.so glibc.2.28
+    #wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm # mysql 5.7 版本可安装
+    # 安装 mysql 源
+    #sudo yum localinstall mysql80-community-release-el8-2.noarch.rpm
+    sudo yum localinstall mysql80-community-release-el7-4.noarch.rpm # 查看启用的版本
+    sudo yum repolist enabled | grep "mysql.*-community.*"
+    # 查看启用的版本
+    sudo yum repolist enabled | grep mysql
+    # dependencies
+    sudo yum install libaio
+    # 安装mysql
+    sudo yum install mysql-community-server
+    # 查看是否安装成功
+    # 好像此方法可以用来查看工具是否安装成功
+    command -v mysql
+    mysql --version
 
-        # login with root id and change password
-        # create user, alter passwd
+    # login with root id and change password
+    # create user, alter passwd
 
-        # 离线安装 解决在线安装缺库的错误
-        wget https://mirrors.aliyun.com/mysql/MySQL-8.0/mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
-        tar xf mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
-        sudo yum install mysql-community-{client,common,devel,embedded,libs,server}-*
+    # 离线安装 解决在线安装缺库的错误
+    wget https://mirrors.aliyun.com/mysql/MySQL-8.0/mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
+    tar xf mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
+    sudo yum install mysql-community-{client,common,devel,embedded,libs,server}-*
 
-        # 修改root密码，创建bae账号，初始化数据库, 并赋予bae账号所有权限
-        touch db_init.sql
-        tee db_init.sql >/dev/null <<EOT
+    # 修改root密码，创建bae账号，初始化数据库, 并赋予bae账号所有权限
+    touch db_init.sql
+    tee db_init.sql >/dev/null <<EOT
 -- by root
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'Root@123456';
 CREATE USER 'bae'@'localhost' IDENTIFIED BY 'Bae@111111';
@@ -637,17 +654,17 @@ create database test;
 GRANT ALL ON *.* TO 'bae'@'localhost';
 EOT
 
-        echo "latest account info"
-        echo root@localhost Root@123456
-        echo bae@localhost Bae@111111
-        echo starting mysqld
-        systemctl start mysqld
-        PASSWD=$(sudo grep 'temporary password' /var/log/mysqld.log | grep -o 'root.*' | awk '{print $2}')
-        mysql --connect-expired-password -uroot -p$PASSWD <db_init.sql
+    echo "latest account info"
+    echo root@localhost Root@123456
+    echo bae@localhost Bae@111111
+    echo starting mysqld
+    systemctl start mysqld
+    PASSWD=$(sudo grep 'temporary password' /var/log/mysqld.log | grep -o 'root.*' | awk '{print $2}')
+    mysql --connect-expired-password -uroot -p$PASSWD <db_init.sql
 
-        # config mysql, 可以自动补全
-        touch $HOME/.my.cnf
-        tee $HOME/.my.cnf >/dev/null <<EOT
+    # config mysql, 可以自动补全
+    touch $HOME/.my.cnf
+    tee $HOME/.my.cnf >/dev/null <<EOT
 # For advice on how to change settings please see
 # http://dev.mysql.com/doc/refman/8.0/en/server-configuration-defaults.html
 
@@ -685,67 +702,53 @@ socket                                   = /var/lib/mysql/mysql.sock
 port                                     = 3306
 EOT
 
-        echo "installing mycli mysql client shell with autocompletion and syntax highlight function"
-        pip3 install -U mycli
-        echo "try it now with command: mycli -uuser -ppasswd"
+    echo "installing mycli mysql client shell with autocompletion and syntax highlight function"
+    pip3 install -U mycli
+    echo "try it now with command: mycli -uuser -ppasswd"
 
-        # 清理文件
-        echo clean tmp files
-        rm db_init.sql
-        rm mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
+    # 清理文件
+    echo clean tmp files
+    rm db_init.sql
+    rm mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar
 
-        sudo groupadd mysql
-        sudo useradd -r -g mysql -s /bin/false mysql
+    sudo groupadd mysql
+    sudo useradd -r -g mysql -s /bin/false mysql
 
-        #cd /usr/local
-        #tar xvf /path/to/mysql-VERSION-OS.tar.xz
-        #ln -s full-path-to-mysql-VERSION-OS mysql
-        #cd mysql
-        #mkdir mysql-files
-        #chown mysql:mysql mysql-files
-        #chmod 750 mysql-files
-        #bin/mysqld --initialize --user=mysql
-        #bin/mysql_ssl_rsa_setup
-        #bin/mysqld_safe --user=mysql &
-        ## ext command is optional
-        #cp support-files/mysql.server /etc/init.d/mysql.server
+    #cd /usr/local
+    #tar xvf /path/to/mysql-VERSION-OS.tar.xz
+    #ln -s full-path-to-mysql-VERSION-OS mysql
+    #cd mysql
+    #mkdir mysql-files
+    #chown mysql:mysql mysql-files
+    #chmod 750 mysql-files
+    #bin/mysqld --initialize --user=mysql
+    #bin/mysql_ssl_rsa_setup
+    #bin/mysqld_safe --user=mysql &
+    ## ext command is optional
+    #cp support-files/mysql.server /etc/init.d/mysql.server
 
-        # 下载测试数据并安装
-        # 参考网址 https://dev.mysql.com/doc/index-other.html
-        # sakila-db: https://dev.mysql.com/doc/sakila/en/sakila-installation.html
-        cd $TMPDIR
-        proxychains4 curl -L 'https://downloads.mysql.com/docs/sakila-db.tar.gz' -o sakila-db.tar.gz
-        tar xzf sakila-db.tar.gz
-        cd sakila-db
-        mysql --connect-expired-password -uroot -pRoot@123456 <sakila-schema.sql
-        mysql --connect-expired-password -uroot -pRoot@123456 <sakila-data.sql
-        cd ..
-        rm sakila-db.tar.gz
-        rm -rf sakila-db
-    }
+    # 下载测试数据并安装
+    # 参考网址 https://dev.mysql.com/doc/index-other.html
+    # sakila-db: https://dev.mysql.com/doc/sakila/en/sakila-installation.html
+    cd $TMPDIR
+    proxychains4 curl -L 'https://downloads.mysql.com/docs/sakila-db.tar.gz' -o sakila-db.tar.gz
+    tar xzf sakila-db.tar.gz
+    cd sakila-db
+    mysql --connect-expired-password -uroot -pRoot@123456 <sakila-schema.sql
+    mysql --connect-expired-password -uroot -pRoot@123456 <sakila-data.sql
+    cd ..
+    rm sakila-db.tar.gz
+    rm -rf sakila-db
 }
 
-setupDisk() {
-    installRclone() {
-        echoContent green " ---> installing rclone"
-        curl https://rclone.org/install.sh | sudo bash
-        rclone config
-    }
+setupDataIntensiveAppServerDependencies() {
+    echo
+}
 
-    installAlist() {
-        echo
-        # echoContent green " ---> installing alist, suitable for x86_64"
-        # curl -fsSL "https://alist.nn.ci/v3.sh" | bash -s install
-        # case $arch in
-        # "x86_64")
-        #     arch=amd64
-        #     ;;
-        # "arm64")
-        #     arch=arm64
-        #     ;;
-        # esac
-    }
-
+installRclone() {
+    echoContent green " ---> installing rclone"
+    curl https://rclone.org/install.sh | sudo bash
+    rclone config
 }
 
 vpsSwissArmyKnife() {
@@ -785,4 +788,117 @@ vpsSwissArmyKnife() {
     # 一键代理脚本：
     # https://github.com/yeahwu/v2ray-wss
 
+}
+
+dev_menu() {
+
+    # 定义所有的安装命令
+    commands=("installBatscore" "installCommonDevLib" "installDocker" "installGithub" "installGolang" "installK8s" "installNodejsByNvm" "installPkgBundle" "installPythonByPyenv" "installRclone" "installRedis" "install_hadoop" "install_java" "install_mysql" "install_scala" "install_zookeeper" "removePython" "setupDataIntensiveAppServerDependencies" "setupDisk" "setupServerEnv" "uninstallGithub" "uninstall_golang" "vpsSwissArmyKnife")
+
+    # 创建一个复选框，让用户选择要执行的命令
+    cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)
+    options=()
+    for i in "${!commands[@]}"; do
+        options+=("$i" "${commands[$i]}" off)
+    done
+    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+    clear
+
+    # 执行用户选择的命令
+    for choice in $choices; do
+        case ${commands[$choice]} in
+        installBatscore)
+            echo "执行 installBatscore"
+            installBatscore
+            ;;
+        installCommonDevLib)
+            echo "执行 installCommonDevLib"
+            installCommonDevLib
+            ;;
+        installDocker)
+            echo "执行 installDocker"
+            installDocker
+            ;;
+        installGithub)
+            echo "执行 installGithub"
+            installGithub
+            ;;
+        installGolang)
+            echo "执行 installGolang"
+            installGolang
+            ;;
+        installK8s)
+            echo "执行 installK8s"
+            installK8s
+            ;;
+        installNodejsByNvm)
+            echo "执行 installNodejsByNvm"
+            installNodejsByNvm
+            ;;
+        installPkgBundle)
+            echo "执行 installPkgBundle"
+            installPkgBundle
+            ;;
+        installPythonByPyenv)
+            echo "执行 installPythonByPyenv"
+            installPythonByPyenv
+            ;;
+        installRclone)
+            echo "执行 installRclone"
+            installRclone
+            ;;
+        installRedis)
+            echo "执行 installRedis"
+            installRedis
+            ;;
+        install_hadoop)
+            echo "执行 install_hadoop"
+            install_hadoop
+            ;;
+        install_java)
+            echo "执行 install_java"
+            install_java
+            ;;
+        install_mysql)
+            echo "执行 install_mysql"
+            install_mysql
+            ;;
+        install_scala)
+            echo "执行 install_scala"
+            install_scala
+            ;;
+        install_zookeeper)
+            echo "执行 install_zookeeper"
+            install_zookeeper
+            ;;
+        removePython)
+            echo "执行 removePython"
+            removePython
+            ;;
+        setupDataIntensiveAppServerDependencies)
+            echo "执行 setupDataIntensiveAppServerDependencies"
+            setupDataIntensiveAppServerDependencies
+            ;;
+        setupDisk)
+            echo "执行 setupDisk"
+            setupDisk
+            ;;
+        setupServerEnv)
+            echo "执行 setupServerEnv"
+            setupServerEnv
+            ;;
+        uninstallGithub)
+            echo "执行 uninstallGithub"
+            uninstallGithub
+            ;;
+        uninstall_golang)
+            echo "执行 uninstall_golang"
+            uninstall_golang
+            ;;
+        vpsSwissArmyKnife)
+            echo "执行 vpsSwissArmyKnife"
+            vpsSwissArmyKnife
+            ;;
+        esac
+    done
 }

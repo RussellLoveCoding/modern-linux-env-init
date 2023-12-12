@@ -238,7 +238,7 @@ proxy_set() {
   else
     local pip=$(hostname -I|awk '{print $1}')
   fi
-  local link=${PROXY_LINK:-http://192.168.1.250:7891}
+  local link=${PROXY_LINK:-http://192.168.100.1:7891}
   proxy_print_status() {
     [ "$http_proxy" != "" ] && echo "http_proxy=$http_proxy"
     [ "$HTTP_PROXY" != "" ] && echo "HTTP_PROXY=$HTTP_PROXY"

@@ -6,7 +6,7 @@ setupShell() {
     echoContent green " ---> installing zsh and ohmyzsh"
     command_exists zsh && echoContent green " ---> zsh have been installed, continue to configure"
     command_exists zsh || {
-        ${installType} zsh >/dev/null 2>>${errLogFile}
+        ${installType} zsh >/dev/null
     }
     command_exists zsh || {
         echoContent red " ---> zsh installation failed, see ${errLogFile} for details"
@@ -22,29 +22,28 @@ setupShell() {
 
     echoContent green " ------------> installing auto suggestion "
     if [ ! -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions ]; then
-        echo abcd
-        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 1>/dev/null
     else
         echoContent green " ---> zsh-autosuggestions directory already exists"
     fi
 
     echoContent green " ------------> installing auto suggestion "
     if [ ! -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting ]; then
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 1>/dev/null
     else
         echoContent green " ---> zsh-syntax-highlighting directory already exists"
     fi
 
     echoContent green " ------------> installing MRU, easy to access recently used files or directory"
     if [ ! -d ~/.oh-my-zsh/custom/plugins/zsh-z ]; then
-        git clone https://github.com/agkozak/zsh-z ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-z
+        git clone https://github.com/agkozak/zsh-z ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-z 1>/dev/null
     else
         echoContent green " ---> zsh-z directory already exists"
     fi
 
     echoContent green " ------------> installing install powerlevel10k, a more comfotable theme, style for ohmyzsh"
     if [ ! -d $HOME/.oh-my-zsh/custom/themes/powerlevel10k ]; then
-        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k 1>/dev/null
         sed -rin 's~ZSH_THEME=.*~ZSH_THEME="powerlevel10k/powerlevel10k"~g;' $shellProfile
     else
         echoContent green " ---> powerlevel10k directory already exists, maybe you need to reset"
@@ -52,36 +51,38 @@ setupShell() {
 
     sudo \cp ${modernEnvHomeDir}/global_aliases /etc/
     if [ -f ~/.zshrc ]; then
-        mv ~/.zshrc ~/.zshrc-bak.$(date +'%y-%m-%d_%H:%M:%S') 
+        mv ~/.zshrc ~/.zshrc-bak.$(date +'%y-%m-%d_%H:%M:%S')
     fi
     \cp ${modernEnvHomeDir}/zshrc $HOME/.zshrc
     source $shellProfile
-    p10k configure 
+    p10k configure
 }
 
 uninstallShell() {
     echoContent green " ---> uninstalling zsh and ohmyzsh"
-    uninstall_oh_my_zsh 
+    uninstall_oh_my_zsh
 }
 
 # ssh 端口号修改
 # need to be root
 sshConfig() {
-    $installType sshpass 1>/dev/null 2>${errLogFile}
-    netstat -tunlp | grep $sshNewPort >/dev/null 2>&1 && {
+    $installType sshpass 1>/dev/null
+    if netstat -tunlp | grep $sshNewPort >/dev/null; then
         echoContent red " ---> port $sshNewPort is already in use, please choose another one"
         return
-    }
+    fi
 
-    [ ! -f /etc/ssh/sshd_config.bak ] && sudo \cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    if [ ! -f /etc/ssh/sshd_config.bak ]; then
+        sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    fi
     echo -e 'configuring ssh port, please make sure you have open the port in firewall, will remove 22 port, keep other ports, add new port if no other port left'
     # remove 22 port
     sudo sed -rin '/^#?Port\s*22$/d' /etc/ssh/sshd_config
     # add new port
-    sudo sed -i '$a\Port 12022' /etc/ssh/sshd_config         
+    sudo sed -i '$a\Port 12022' /etc/ssh/sshd_config
 
-    sudo \sed -rin 's~^#?\s*PasswordAuthentication yes~PasswordAuthentication no~g;' /etc/ssh/sshd_config
-    sudo \sed -rin 's~^#?\s*PubkeyAuthentication yes~PubkeyAuthentication yes~g;' /etc/ssh/sshd_config
+    sudo sed -rin 's~^#?\s*PasswordAuthentication yes~PasswordAuthentication no~g;' /etc/ssh/sshd_config
+    sudo sed -rin 's~^#?\s*PubkeyAuthentication yes~PubkeyAuthentication yes~g;' /etc/ssh/sshd_config
     sudo systemctl restart sshd
 }
 
@@ -110,12 +111,12 @@ setupToolsByDPKG() {
 
     # packages using general install method
     echoContent green " ---> installing basic tools"
-    ${upgrade} >>${execLogFile} 2>&1
+    ${upgrade} >>${execLogFile}
 
     for pkg in $pkgsKeys; do
         pkgName="$pkg"
         commandName=${pkgsDict[$pkgName]}
-        command_exists $commandName || ${installType} ${pkgName} 1>/dev/null 2>>${errLogFile}
+        command_exists $commandName || ${installType} ${pkgName} 1>/dev/null
         command_exists $commandName || {
             echoContent red " ---> ${pkgName} installation failed, see ${errLogFile} for details"
         }
@@ -124,9 +125,9 @@ setupToolsByDPKG() {
     # packages using special install method
     if ! find /usr/bin /usr/sbin | grep -q -w cron; then
         if [[ "${release}" == "ubuntu" ]] || [[ "${release}" == "debian" ]]; then
-            ${installType} cron 1>/dev/null 2>>${errLogFile}
+            ${installType} cron 1>/dev/null
         else
-            ${installType} crontabs 1>/dev/null 2>>${errLogFile}
+            ${installType} crontabs 1>/dev/null
         fi
     fi
     command_exists crontab || echoContent red " ---> ${pkg} installation failed, see ${errLogFile} for details"
@@ -146,16 +147,16 @@ setupNeovim() {
         echoContent green " ---> nvim have been installed, continue to configure"
     }
 
-    if ! command_exists nvim {
+    if ! command_exists nvim; then
         pushd /tmp
-        sudo apt update 1>/dev/null 2>&1
+        sudo apt update 1>/dev/null
         echoContent green " ---> installing dependencies"
         {
-            $installType git curl autoconf make tar gcc 1>/dev/null 2>>${errLogFile}
+            $installType git curl autoconf make tar gcc 1>/dev/null
             if [ $release == "ubuntu" ]; then
-                $installType pkg-config 1>/dev/null 2>>${errLogFile}
+                $installType pkg-config 1>/dev/null
             elif [ $release == "centos" ]; then
-                $installType pkgconfig 1>/dev/null 2>>${errLogFile}
+                $installType pkgconfig 1>/dev/null
             fi
             command_exists node || {
                 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
@@ -163,10 +164,10 @@ setupNeovim() {
                 nvm install node
                 nvm use node
             }
-            git clone https://github.com/universal-ctags/ctags.git
+            git clone https://github.com/universal-ctags/ctags.git 1>/dev/null
             cd ctags
-            ./autogen.sh 1>/dev/null 2>>${errLogFile}
-            ./configure 1>/dev/null 2>>${errLogFile}
+            ./autogen.sh 1>/dev/null
+            ./configure 1>/dev/null
             make
             sudo make install
             cd ..
@@ -184,7 +185,7 @@ setupNeovim() {
         sudo ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
         $rm nvim-linux${archVariant}.tar.gz
         popd
-    }
+    fi
 
     command_exists nvim || {
         echoContent red " ---> nvim installtion failed, see ${errLogFile} for details"
@@ -205,7 +206,9 @@ setupNeovim() {
 }
 
 uninstallNeovim() {
-    echo
+    rm -rf ~/.vim
+    rm -rf ~/.config/nvim
+    sudo rm `which nvim`
 }
 
 setupTmux() {
@@ -222,17 +225,17 @@ setupTmux() {
     echoContent green " ---> installing tmux"
     if command_exists tmux; then
         echoContent green " ---> tmux have been installed, continue to configure tmux"
-    else 
-        $installType tmux 1>/dev/null 2>>${errLogFile}
+    else
+        $installType tmux 1>/dev/null
     fi
-    if ! command_exists tmux {
+    if ! command_exists tmux; then
         echoContent red " ---> tmux installation failed, see ${errLogFile} for details"
         return
-    }
+    fi
 
     echoContent green " ---> configuring tmux"
     [ ! -d $HOME/.tmux/plugins/tpm ] && {
-        git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 1>/dev/null 2>>${errLogFile}
+        git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 1>/dev/null
     }
     [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak
     \cp ${modernEnvHomeDir}/tmux.conf ~/.tmux.conf
@@ -244,67 +247,74 @@ setupTmux() {
 
 }
 
+uninstallTmux() {
+    $removeType tmux
+}
+
 installEnhancedTools() {
     echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     if [ ! -d ~/.fzf ]; then
-        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf 1>/dev/null
         ~/.fzf/install
     else
         echoContent green " ---> fzf directory already exists"
     fi
 }
 
-setupAll() {
-    installEnhancedTools
-    installOtherBasicTools
-    setupAll
-    setupNeovim
-    setupSensitiveEnvironment
-    setupShell
-    setupTmux
-    setupToolsByDPKG
-    sshConfig
-    uninstallNeovim
-    uninstallShell
-}
-# 主菜单
-mainMenu() {
-    clear
-    echo "欢迎使用工具菜单"
-    echo "请选择您要执行的操作："
-    echo "1. 安装增强工具"
-    echo "2. 安装其他基本工具"
-    echo "3. 设置全部环境"
-    echo "4. 设置Neovim"
-    echo "5. 设置敏感环境"
-    echo "6. 设置Shell"
-    echo "7. 设置Tmux"
-    echo "8. 通过DPKG设置工具"
-    echo "9. SSH配置"
-    echo "10. 卸载Neovim"
-    echo "11. 卸载Shell"
-    echo "0. 退出"
-
-    read -p "请输入选项: " choice
-    case $choice in
-        1) installEnhancedTools ;;
-        2) installOtherBasicTools ;;
-        3) setupAll ;;
-        4) setupNeovim ;;
-        5) setupSensitiveEnvironment ;;
-        6) setupShell ;;
-        7) setupTmux ;;
-        8) setupToolsByDPKG ;;
-        9) sshConfig ;;
-        10) uninstallNeovim ;;
-        11) uninstallShell ;;
-        0) exit ;;
-        *) echo "无效的选项，请重新输入" ;;
-    esac
-
-    read -p "按任意键返回主菜单..." -n 1 -r
-    mainMenu
+uninstallEnhancedTools() {
+    ~/.fzf/uninstall
+    rm -rf ~/.fzf
 }
 
-# 运行主菜单
-mainMenu
+basic_menu() {
+
+    # 定义所有的安装命令
+    commands=("installEnhancedTools" "installOtherBasicTools" "setupAll" "setupNeovim" "setupSensitiveEnvironment" "setupShell" "setupTmux" "setupToolsByDPKG" "sshConfig" "uninstallNeovim" "uninstallShell")
+
+    # 创建一个复选框，让用户选择要执行的命令
+    cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)
+    options=()
+    for i in "${!commands[@]}"; do
+        options+=("$i" "${commands[$i]}" off)
+    done
+    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    # 执行用户选择的命令
+    for choice in $choices; do
+        case ${commands[$choice]} in
+        installEnhancedTools)
+            echo "执行 installEnhancedTools"
+            ;;
+        installOtherBasicTools)
+            echo "执行 installOtherBasicTools"
+            ;;
+        setupAll)
+            echo "执行 setupAll"
+            ;;
+        setupNeovim)
+            echo "执行 setupNeovim"
+            ;;
+        setupSensitiveEnvironment)
+            echo "执行 setupSensitiveEnvironment"
+            ;;
+        setupShell)
+            echo "执行 setupShell"
+            ;;
+        setupTmux)
+            echo "执行 setupTmux"
+            ;;
+        setupToolsByDPKG)
+            echo "执行 setupToolsByDPKG"
+            ;;
+        sshConfig)
+            echo "执行 sshConfig"
+            ;;
+        uninstallNeovim)
+            echo "执行 uninstallNeovim"
+            ;;
+        uninstallShell)
+            echo "执行 uninstallShell"
+            ;;
+        esac
+    done
+}
