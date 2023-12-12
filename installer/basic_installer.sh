@@ -278,42 +278,54 @@ basic_menu() {
         options+=("$i" "${commands[$i]}" off)
     done
     choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+    clear
 
     # 执行用户选择的命令
     for choice in $choices; do
         case ${commands[$choice]} in
         installEnhancedTools)
             echo "执行 installEnhancedTools"
+            installEnhancedTools
             ;;
         installOtherBasicTools)
             echo "执行 installOtherBasicTools"
+            installOtherBasicTools
             ;;
         setupAll)
             echo "执行 setupAll"
+            setupAll
             ;;
         setupNeovim)
             echo "执行 setupNeovim"
+            setupNeovim
             ;;
         setupSensitiveEnvironment)
             echo "执行 setupSensitiveEnvironment"
+            setupSensitiveEnvironment
             ;;
         setupShell)
             echo "执行 setupShell"
+            setupShell
             ;;
         setupTmux)
             echo "执行 setupTmux"
+            setupTmux
             ;;
         setupToolsByDPKG)
             echo "执行 setupToolsByDPKG"
+            setupToolsByDPKG
             ;;
         sshConfig)
             echo "执行 sshConfig"
+            sshConfig
             ;;
         uninstallNeovim)
             echo "执行 uninstallNeovim"
+            uninstallNeovim
             ;;
         uninstallShell)
             echo "执行 uninstallShell"
+            uninstallShell
             ;;
         esac
     done

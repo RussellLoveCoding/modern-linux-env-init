@@ -3,9 +3,7 @@
 # 检查系统
 set -e 
 
-source basic-installer.sh  common.sh  dev-env.sh    network-config.sh  pkgs
-source common.sh
-source ./pkgs
+source basic_installer.sh  common.sh  dev_env.sh    network-config.sh  pkgs
 export LANG=en_US.UTF-8
 
 # initialize global variable
@@ -55,43 +53,18 @@ menu() {
     echoContent green "描述: Linux 初始化\n"
     checkWgetShowProgress
     echoContent red "=============================================================="
-    echoContent yellow "1. setup shell"
-    echoContent yellow "2. setup basic tools"
-    echoContent yellow "3. setup server env"
-    echoContent yellow "4. setup programmming language"
-    echoContent yellow "5. setup disk"
-    echoContent yellow "6. setup network"
-    echoContent yellow "7. setup data intensive app server dependencies: including hadoop, zookeeper"
-    echoContent yellow "8. setup specific tool"
+    echoContent yellow "1. setup basic env"
+    echoContent yellow "2. setup dev env"
     echoContent red "=============================================================="
 
     read -r -p "请选择:" selectInstallType
     case ${selectInstallType} in
     1)
-        setupShell
+        basic_menu
         ;;
     2)
-        setupBasicTools
-        ;;
-    3)
-        setupServerEnv
-        ;;
-    4)
-        setupProgLang
-        ;;
-    5)
-        setupDisk
-        ;;
-    6)
-        setupNetwork
-        ;;
-    7)
-        setupDataIntensiveAppServerDependencies
-        ;;
-    8)
-        setupSepcificTool
+        dev_menu
         ;;
     esac
 }
-init
 menu
