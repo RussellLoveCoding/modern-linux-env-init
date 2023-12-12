@@ -3,7 +3,8 @@
 # 检查系统
 set -e 
 
-source basic_installer.sh  common.sh  dev_env.sh    network-config.sh  pkgs
+source basic_installer.sh  common.sh  dev_env.sh    network-config.sh  pkgs 
+source server_env.sh
 export LANG=en_US.UTF-8
 
 # initialize global variable
@@ -55,6 +56,7 @@ menu() {
     echoContent red "=============================================================="
     echoContent yellow "1. setup basic env"
     echoContent yellow "2. setup dev env"
+    echoContent yellow "3. setup server env"
     echoContent red "=============================================================="
 
     read -r -p "请选择:" selectInstallType
@@ -64,6 +66,9 @@ menu() {
         ;;
     2)
         dev_menu
+        ;;
+    3)
+        server_menu
         ;;
     esac
 }

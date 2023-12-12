@@ -1,0 +1,22 @@
+{
+    "pyenv": true,
+    "nvm": true,
+    "vim": {
+    },
+    "shell": {
+        "vendor": "zsh",
+        "theme": "powerlevel10k/powerlevel10k",
+        "plugin":[
+            "zsh-autosuggestions",
+            "zsh-syntax-highlighting",
+            "zsh-completions",
+            "zsh-history-substring-search",
+            "zsh-interactive-cd",
+            "zsh-interactive-cd",
+            "zsh-interactive"
+        ]
+    },
+    "lang_compiler": {
+
+    }
+}
