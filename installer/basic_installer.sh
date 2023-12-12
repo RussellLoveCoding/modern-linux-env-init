@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#set -x
 set -e
 source common.sh
 setupShell() {
@@ -55,7 +56,7 @@ setupShell() {
     fi
     \cp ${modernEnvHomeDir}/zshrc $HOME/.zshrc
     source $shellProfile
-    p10k configure
+    echoContent green "you have to run 'p10k configure' manually, since this would cause other software installation failure."
 }
 
 uninstallShell() {
@@ -67,15 +68,16 @@ uninstallShell() {
 # need to be root
 sshConfig() {
     $installType sshpass 1>/dev/null
-    if netstat -tunlp | grep $sshNewPort >/dev/null; then
-        echoContent red " ---> port $sshNewPort is already in use, please choose another one"
+    $installType net-tools  1>/dev/null
+    if netstat -tunlp | grep 12022 >/dev/null; then
+        echoContent red " ---> port 12022 is already in use, please choose another one"
         return
     fi
 
     if [ ! -f /etc/ssh/sshd_config.bak ]; then
         sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
     fi
-    echo -e 'configuring ssh port, please make sure you have open the port in firewall, will remove 22 port, keep other ports, add new port if no other port left'
+   echoContent red 'configuring ssh port, please make sure you have open the port in firewall, will remove 22 port, keep other ports, add new port if no other port left'
     # remove 22 port
     sudo sed -rin '/^#?Port\s*22$/d' /etc/ssh/sshd_config
     # add new port
@@ -136,12 +138,11 @@ setupToolsByDPKG() {
 
 installOtherBasicTools() {
     # 在 terminal 下从远程主机复制文本到本地剪贴板
-    sudo \cp ${modernEnvPath}/scripts/osc52 /usr/local/bin/
+    sudo \cp ${modernEnvPath}/bin-scripts/osc52 /usr/local/bin/
 
 }
 
 setupNeovim() {
-
     echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     command_exists nvim && {
         echoContent green " ---> nvim have been installed, continue to configure"
@@ -158,32 +159,36 @@ setupNeovim() {
             elif [ $release == "centos" ]; then
                 $installType pkgconfig 1>/dev/null
             fi
-            command_exists node || {
+            if ! command_exists node; then
                 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash >>${errLogFile} 1>/dev/null
                 source $shellProfile
                 nvm install node
                 nvm use node
-            }
-            git clone https://github.com/universal-ctags/ctags.git 1>/dev/null
-            cd ctags
-            ./autogen.sh 1>/dev/null
-            ./configure 1>/dev/null
-            make
-            sudo make install
-            cd ..
-            sudo \rm -rf ctags
+	    fi
+	    if ! command_exists ctags; then
+	        if [ -d ctags ]; then
+	            rm -rf ctags
+	        fi
+                git clone https://github.com/universal-ctags/ctags.git 1>/dev/null 2>&1
+                cd ctags
+                ./autogen.sh 1>/dev/null 2>&1
+                ./configure 1>/dev/null  2>&1
+                make -j   1>/dev/null 2>&1
+                sudo make install  1>/dev/null 2>&1
+                cd .. 
+                sudo \rm -rf ctags
+	    fi
         }
 
         if [ "$arch" == "x86_64" ]; then
             archVariant=64
         fi
+	echoContent green " ----> downloading neovim tarball"
         curl -sSOL https://github.com/neovim/neovim/releases/download/stable/nvim-linux${archVariant}.tar.gz
-        tar nvim-linux${archVariant}.tar.gz
-
         sudo tar -xzf nvim-linux${archVariant}.tar.gz -C /usr/local/
         sudo mv /usr/local/nvim-linux$archVariant /usr/local/nvim
         sudo ln -s /usr/local/nvim/bin/nvim /usr/local/bin/nvim
-        $rm nvim-linux${archVariant}.tar.gz
+        rm nvim-linux${archVariant}.tar.gz
         popd
     fi
 
@@ -201,8 +206,7 @@ setupNeovim() {
     # install vim-plug
     curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-    echoContent "--> nvim installed, later after you open nvim, plugin will be automatically installed"
+    nvim -c 'PlugInstall' -c 'qa!'
 }
 
 uninstallNeovim() {
@@ -219,7 +223,7 @@ setupTmux() {
     # curl -L "https://github.com/tmux/tmux/releases/download/3.2a/tmux-3.2a.tar.gz" -o tmux-3.2a.tar.gz
     # tar xzf tmux-3.2a.tar.gz
     # cd tmux-3.2a
-    # ./configure && make -j 8 && sudo make install
+    # ./configure && make -j && sudo make install
 
     # install tmux
     echoContent green " ---> installing tmux"
@@ -239,7 +243,7 @@ setupTmux() {
     }
     [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak
     \cp ${modernEnvHomeDir}/tmux.conf ~/.tmux.conf
-    tmux source ~/.tmux.conf
+    # tmux source ~/.tmux.conf
     # cp /home/cmc/dev-env-setting/mux-airline-gruvbox-dark.conf ~/.tmux/
 
     echoContent green "please enter tmux seesion and install tmux plugin with key stroke prefix-I"
@@ -266,6 +270,17 @@ uninstallEnhancedTools() {
     rm -rf ~/.fzf
 }
 
+setupAll() {
+    sshConfig
+    setupToolsByDPKG
+    setupTmux
+    setupNeovim
+    installEnhancedTools
+    installOtherBasicTools
+    setupSensitiveEnvironment
+    setupShell
+    
+}
 basic_menu() {
 
     # 定义所有的安装命令
@@ -330,3 +345,4 @@ basic_menu() {
         esac
     done
 }
+

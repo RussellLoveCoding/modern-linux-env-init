@@ -283,6 +283,7 @@ installK8s() {
 }
 
 installKVM() {
+    # 安装所需的软件包：
     $installType bridge-utils cpu-checker libvirt-clients libvirt-daemon qemu qemu-kvm 1>/dev/null
     # 运行 kvm-ok 命令并保存输出
     output=$(kvm-ok)
@@ -293,6 +294,38 @@ installKVM() {
     else
         echo "不支持 KVM 虚拟化"
     fi
+
+    # Install OpenStack 安装 OpenStack
+    sudo snap install openstack
+    # Install dependencies 安装依赖项
+    sunbeam prepare-node-script | bash -x && newgrp snap_daemon
+    # Bootstrap the cloud 引导云
+    sunbeam cluster bootstrap --accept-defaults
+}
+
+diable_bunch_of_server_stuff() {
+sudo snap disable microk8s
+sudo snap disable nextcloud
+sudo snap disable wekan
+sudo snap disable kata-containers
+sudo snap disable docker
+sudo snap disable canonical-livepatch
+sudo snap disable rocketchat-server
+sudo snap disable mosquitto
+sudo snap disable etcd
+sudo snap disable powershell
+sudo snap disable sabnzbd
+sudo snap disable wormhole
+sudo snap disable aws-cli
+sudo snap disable google-cloud-sdk
+sudo snap disable slcli
+sudo snap disable doctl
+sudo snap disable conjure-up
+sudo snap disable postgresq110
+sudo snap disable heroku
+sudo snap disable keepalived
+sudo snap disable prometheus
+sudo snap disable juju
 }
 
 setupServerEnv() {

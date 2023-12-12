@@ -117,8 +117,12 @@ installPythonByPyenv() {
     # if you run `pyenv install version`
 
     # install latest python version
+    echoContent green " -----> installing dependencies for pyenv to install python"
     $upgrade 1>/dev/null
     ${installType} libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev 1>/dev/null
+    $installType python3-pip 1>/dev/null 2>&1
+    pip install --upgrade pip 1>/dev/null 2>&1
+
     if [ ! -d "$(pyenv root)"/plugins/pyenv-install-latest ]; then
         git clone https://github.com/momo-lab/pyenv-install-latest.git "$(pyenv root)"/plugins/pyenv-install-latest
     fi
@@ -360,7 +364,6 @@ uninstallNvm() {
     rm -rf "$NVM_DIR"
 }
 
-
 installCommonDevLib() {
 
     # 常见库配置
@@ -449,7 +452,6 @@ EOT
 
 }
 
-
 installRclone() {
     echoContent green " ---> installing rclone"
     curl https://rclone.org/install.sh | sudo bash
@@ -498,7 +500,7 @@ vpsSwissArmyKnife() {
 dev_menu() {
 
     # 定义所有的安装命令
-    commands=("installBatscore" "installCommonDevLib" "installDocker" "installGithub" "installGolang" "installK8s" "installNodejsByNvm" "installPkgBundle" "installPythonByPyenv" "installRclone" "installRedis" "install_hadoop" "install_java" "install_mysql" "install_scala" "install_zookeeper" "removePython"  "setupDisk" "setupServerEnv" "uninstallGithub" "uninstall_golang" "vpsSwissArmyKnife")
+    commands=("installBatscore" "installCommonDevLib" "installDocker" "installGithub" "installGolang" "installK8s" "installNodejsByNvm" "installPkgBundle" "installPythonByPyenv" "installRclone" "installRedis" "install_hadoop" "install_java" "install_mysql" "install_scala" "install_zookeeper" "removePython" "setupDisk" "setupServerEnv" "uninstallGithub" "uninstall_golang" "vpsSwissArmyKnife")
 
     # 创建一个复选框，让用户选择要执行的命令
     cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)

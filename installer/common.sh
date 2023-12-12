@@ -131,9 +131,9 @@ init() {
     modernEnvHomeDir="${modernEnvPath}/homedir"
 
     # command redefinition, in case alias
-    installType='sudo apt -y install'
-    removeType='sudo apt -y remove'
-    upgrade="sudo apt -y update"
+    installType='sudo apt-get -y install'
+    removeType='sudo apt-get -y remove'
+    upgrade="sudo apt-get -y update"
 
     optdir="$HOME/opt"
     sed="\sed"
@@ -156,15 +156,15 @@ init() {
         ;;
     "debian")
         release="debian"
-        installType='sudo apt -y install'
-        upgrade="sudo apt update"
-        removeType='sudo apt -y autoremove'
+        installType='sudo apt-get -y install'
+        upgrade="sudo apt-get update"
+        removeType='sudo apt-get -y autoremove'
         ;;
     "ubuntu")
         release="ubuntu"
-        installType='sudo apt -y install'
-        upgrade="sudo apt update"
-        removeType='sudo apt -y autoremove'
+        installType='sudo apt-get -y install'
+        upgrade="sudo apt-get update"
+        removeType='sudo apt-get -y autoremove'
         ;;
     *)
         echo "不支持的系统"
@@ -210,32 +210,29 @@ genShellProfile() {
 }
 
 check_network() {
-    if curl -s --head --request GET https://www.baidu.com | grep "200 OK" >/dev/null; then
-        echo "baidu.com is reachable"
-    else
-        echo "baidu.com is not reachable"
-        echo "please check your network"
+    if ! curl -s -o /dev/null -w "%{http_code}" --head --request GET https://www.baidu.com/  --max-time 3 | grep -qE "200|301"; then
+        echoContent red "baidu.com is not reachable"
+        echoContent red "please check your network, nothing installed, exited"
         exit 1
     fi
 
-    if curl -s --head --request GET https://www.github.com | grep "200 OK" >/dev/null; then
-        echo "github.com is reachable"
-    else
-        echo "github.com is not reachable"
-        echo "please check your network"
+    if ! curl -s -o /dev/null -w "%{http_code}" --head --request GET https://github.com/ --max-time 3| grep -qE "200|301"; then
+        echoCOntent red "github.com is not reachable"
+        echoCOntent red "please check your network, nothing installed, exited"
         exit 1
     fi
 
-    if curl -s --head --request GET https://www.google.com | grep "200 OK" >/dev/null; then
-        echo "google.com is reachable"
-    else
-        echo "google.com is not reachable"
-        echo "please check your network"
-        echo "you maybe encounter some network timeout during the course of setup"
+    if ! curl -s -o /dev/null -w "%{http_code}" --head --request GET https://google.com/ --max-time 3 | grep -qE "200|301"; then
+        echoContent red "google.com is not reachable"
+        echoContent red "please check your network"
+        echoContent red "you maybe encounter some network timeout during the course of setup"
     fi
+
 }
 
-# check_network
-init
 unalias_list
-$installType dialog 1>/dev/null
+init
+check_network
+if ! command_exists  dialog; then
+    $installType dialog 1>/dev/null
+fi

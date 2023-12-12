@@ -10,7 +10,7 @@ setupNetwork() {
         pushd /tmp
         git clone https://github.com/rofl0r/proxychains-ng.git
         cd proxychains-ng
-        make -j 8
+        make -j
         sudo make install
         mkdir ~/.proxychains
         echo '[ProxyList]' >>proxychains.conf

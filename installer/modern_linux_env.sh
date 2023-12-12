@@ -3,7 +3,9 @@
 # 检查系统
 set -e 
 
-source basic_installer.sh  common.sh  dev_env.sh    network-config.sh  pkgs 
+source basic_installer.sh  
+source common.sh  
+source dev_env.sh
 source server_env.sh
 export LANG=en_US.UTF-8
 
