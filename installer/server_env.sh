@@ -35,19 +35,19 @@ EOT
 
 installRedis() {
     # install server.
-    sudo apt update
+    $upgrade
     sudo apt install -y redis redis-server
     sudo systemctl start redis-server
 
     curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
     echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-    sudo apt-get update
+    $upgrade
     sudo apt-get install redis
 
     curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
     sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
     echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-    sudo apt-get update
+    $upgrade
     sudo apt-get install redis-stack-server
 
     # install iredis client with syntax highlight and auto completion
@@ -284,10 +284,15 @@ installK8s() {
 
 installPVE() {
     sed -rin 's~(.*)~# \1~g;' /etc/apt/sources.list.d/pve-enterprise.list
-    echo "deb http://download.proxmox.com/debian/pve buster pve-no-subscription" >> /etc/apt/sources.list.d/pve-enterprise.list
-    apt update --allow-insecure-repositories --allow-unauthenticated
-    apt-get install vim lrzsz unzip net-tools curl screen uuid-runtime git -y 
+    echo "deb http://download.proxmox.com/debian/pve buster pve-no-subscription" >>/etc/apt/sources.list.d/pve-enterprise.list
+    $upgrade
+    apt-get install vim lrzsz unzip net-tools curl screen uuid-runtime git -y
     apt dist-upgrade -y
+
+    export LC_ALL=en_US.UTF-8
+    apt update && apt -y install git && git clone https://github.com/ivanhao/pvetools.git
+    cd pvetools
+    ./pvetools.sh
 }
 installKVM() {
     # 安装所需的软件包：
@@ -310,7 +315,32 @@ installKVM() {
     sunbeam cluster bootstrap --accept-defaults
 }
 
+install_server_stuff() {
+    sudo snap install nextcloud
+    sudo snap install wekan
+    sudo snap install kata-containers --classic
+    sudo snap install docker
+    sudo snap install canonical-livepatch
+    sudo snap install rocketchat-server
+    sudo snap install mosquitto
+    sudo snap install etcd
+    sudo snap install powershell --classic
+    sudo snap install sabnzbd
+    sudo snap install wormhole
+    sudo snap install aws-cli --classic
+    sudo snap install google-cloud-sdk --classic
+    sudo snap install slcli
+    sudo snap install doctl
+    sudo snap install conjure-up --classic
+    sudo snap install postgresql10
+    sudo snap install heroku --classic
+    sudo snap install keepalived
+    sudo snap install prometheus
+    sudo snap install juju --classic
+}
+
 diable_bunch_of_server_stuff() {
+
     sudo snap disable microk8s
     sudo snap disable nextcloud
     sudo snap disable wekan
@@ -347,46 +377,5 @@ setupServerEnv() {
 }
 
 server_menu() {
-
-    commands=("installKVM" "installPVE" "installDocker" "installK8s" "installRedis" "install_hadoop" "install_mysql" "install_mysql")
-
-    # 创建一个复选框，让用户选择要执行的命令
-    cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)
-    options=()
-    for i in "${!commands[@]}"; do
-        options+=("$i" "${commands[$i]}" off)
-    done
-    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
-    clear
-
-    # 执行用户选择的命令
-    for choice in $choices; do
-        case ${commands[$choice]} in
-            installKVM)
-                installKVM
-                ;;
-            installPVE)
-                installPVE
-                ;;
-            installDocker)
-                installDocker
-                ;;
-            installK8s)
-                installK8s
-                ;;
-            installRedis)
-                installRedis
-                ;;
-            install_hadoop)
-                install_hadoop
-                ;;
-            install_mysql)
-                install_mysql
-                ;;
-            install_zookeeper)
-                install_zookeeper
-                ;;
-        esac
-    done
-
+    echo
 }

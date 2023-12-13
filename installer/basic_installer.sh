@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 主菜单
 #set -x
 set -e
 source common.sh
@@ -55,7 +56,6 @@ setupShell() {
         mv ~/.zshrc ~/.zshrc-bak.$(date +'%y-%m-%d_%H:%M:%S')
     fi
     \cp ${modernEnvHomeDir}/zshrc $HOME/.zshrc
-    source $shellProfile
     echoContent green "you have to run 'p10k configure' manually, since this would cause other software installation failure."
 }
 
@@ -279,70 +279,4 @@ setupAll() {
     installOtherBasicTools
     setupSensitiveEnvironment
     setupShell
-    
 }
-basic_menu() {
-
-    # 定义所有的安装命令
-    commands=("installEnhancedTools" "installOtherBasicTools" "setupAll" "setupNeovim" "setupSensitiveEnvironment" "setupShell" "setupTmux" "setupToolsByDPKG" "sshConfig" "uninstallNeovim" "uninstallShell")
-
-    # 创建一个复选框，让用户选择要执行的命令
-    cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)
-    options=()
-    for i in "${!commands[@]}"; do
-        options+=("$i" "${commands[$i]}" off)
-    done
-    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
-    clear
-
-    # 执行用户选择的命令
-    for choice in $choices; do
-        case ${commands[$choice]} in
-        installEnhancedTools)
-            echo "执行 installEnhancedTools"
-            installEnhancedTools
-            ;;
-        installOtherBasicTools)
-            echo "执行 installOtherBasicTools"
-            installOtherBasicTools
-            ;;
-        setupAll)
-            echo "执行 setupAll"
-            setupAll
-            ;;
-        setupNeovim)
-            echo "执行 setupNeovim"
-            setupNeovim
-            ;;
-        setupSensitiveEnvironment)
-            echo "执行 setupSensitiveEnvironment"
-            setupSensitiveEnvironment
-            ;;
-        setupShell)
-            echo "执行 setupShell"
-            setupShell
-            ;;
-        setupTmux)
-            echo "执行 setupTmux"
-            setupTmux
-            ;;
-        setupToolsByDPKG)
-            echo "执行 setupToolsByDPKG"
-            setupToolsByDPKG
-            ;;
-        sshConfig)
-            echo "执行 sshConfig"
-            sshConfig
-            ;;
-        uninstallNeovim)
-            echo "执行 uninstallNeovim"
-            uninstallNeovim
-            ;;
-        uninstallShell)
-            echo "执行 uninstallShell"
-            uninstallShell
-            ;;
-        esac
-    done
-}
-

@@ -236,3 +236,7 @@ check_network
 if ! command_exists  dialog; then
     $installType dialog 1>/dev/null
 fi
+
+if ! command_exists  whiptail; then
+    $installType whiptail 1>/dev/null
+fi
