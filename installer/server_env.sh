@@ -282,6 +282,39 @@ installK8s() {
 
 }
 
+installPVE() {
+    # Debian，Proxmox
+    # 一般情况下，需要同时修改基础系统（Debian）的源文件 /etc/apt/sources.list 和 Proxmox 的源文件。
+    # 修改基础系统（Debian）的源文件，可以使用如下命令：
+
+    cp /etc/apt/sources.list /etc/apt/sources.list.bak
+    sed -i 's|^deb http://ftp.debian.org|deb https://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
+    sed -i 's|^deb http://security.debian.org|deb https://mirrors.ustc.edu.cn/debian-security|g' /etc/apt/sources.list
+
+    # 修改 Proxmox 的源文件，可以使用如下命令：
+    source /etc/os-release
+    echo "deb https://mirrors.ustc.edu.cn/proxmox/debian/pve $VERSION_CODENAME pve-no-subscription" > /etc/apt/sources.list.d/pve-no-subscription.list
+    # 对于 Proxmox Backup Server 和 Proxmox Mail Gateway，请将以上命令中的 pve 分别替换为 pbs 和 pmg。
+    # PVE 8 之后默认安装 ceph 仓库源文件 /etc/apt/sources.list.d/ceph.list，可以使用如下命令更换源：
+
+    if [ -f /etc/apt/sources.list.d/ceph.list ]; then CEPH_CODENAME=`ceph -v | grep ceph | awk '{print $(NF-1)}'`; source /etc/os-release; echo "deb https://mirrors.ustc.edu.cn/proxmox/debian/ceph-$CEPH_CODENAME $VERSION_CODENAME no-subscription" > /etc/apt/sources.list.d/ceph.list; fi
+    apt update
+
+    # CT Templates
+    # 另外，如果你需要使用 Proxmox 网页端下载 CT Templates，可以替换 CT Templates 的源为 http://mirrors.ustc.edu.cn。
+
+    # 具体方法：将 /usr/share/perl5/PVE/APLInfo.pm 文件中默认的源地址 http://download.proxmox.com 替换为 https://mirrors.ustc.edu.cn/proxmox 即可。
+
+    # 可以使用如下命令：
+
+    cp  /usr/share/perl5/PVE/APLInfo.pm /usr/share/perl5/PVE/APLInfo.pm.bak
+    cp /usr/share/perl5/PVE/APLInfo.pm /usr/share/perl5/PVE/APLInfo.pm_back
+    sed -i 's|http://download.proxmox.com|https://mirrors.ustc.edu.cn/proxmox|g' /usr/share/perl5/PVE/APLInfo.pm
+    systemctl restart pvedaemon
+
+    # 针对 /usr/share/perl5/PVE/APLInfo.pm 文件的修改，执行`systemctl restart pvedaemon`后生效。
+}
+
 installKVM() {
     # 安装所需的软件包：
     $installType bridge-utils cpu-checker libvirt-clients libvirt-daemon qemu qemu-kvm 1>/dev/null
@@ -304,28 +337,28 @@ installKVM() {
 }
 
 diable_bunch_of_server_stuff() {
-sudo snap disable microk8s
-sudo snap disable nextcloud
-sudo snap disable wekan
-sudo snap disable kata-containers
-sudo snap disable docker
-sudo snap disable canonical-livepatch
-sudo snap disable rocketchat-server
-sudo snap disable mosquitto
-sudo snap disable etcd
-sudo snap disable powershell
-sudo snap disable sabnzbd
-sudo snap disable wormhole
-sudo snap disable aws-cli
-sudo snap disable google-cloud-sdk
-sudo snap disable slcli
-sudo snap disable doctl
-sudo snap disable conjure-up
-sudo snap disable postgresq110
-sudo snap disable heroku
-sudo snap disable keepalived
-sudo snap disable prometheus
-sudo snap disable juju
+    sudo snap disable microk8s
+    sudo snap disable nextcloud
+    sudo snap disable wekan
+    sudo snap disable kata-containers
+    sudo snap disable docker
+    sudo snap disable canonical-livepatch
+    sudo snap disable rocketchat-server
+    sudo snap disable mosquitto
+    sudo snap disable etcd
+    sudo snap disable powershell
+    sudo snap disable sabnzbd
+    sudo snap disable wormhole
+    sudo snap disable aws-cli
+    sudo snap disable google-cloud-sdk
+    sudo snap disable slcli
+    sudo snap disable doctl
+    sudo snap disable conjure-up
+    sudo snap disable postgresq110
+    sudo snap disable heroku
+    sudo snap disable keepalived
+    sudo snap disable prometheus
+    sudo snap disable juju
 }
 
 setupServerEnv() {
@@ -341,7 +374,7 @@ setupServerEnv() {
 
 server_menu() {
 
-    commands=("installKVM" "installBatscore" "installCommonDevLib" "installDocker" "installGithub" "installGolang" "installK8s" "installNodejsByNvm" "installPkgBundle" "installPythonByPyenv" "installRclone" "installRedis" "install_hadoop" "install_java" "install_mysql" "install_scala" "install_zookeeper" "removePython" "setupDisk" "setupServerEnv" "uninstallGithub" "uninstall_golang" "vpsSwissArmyKnife")
+    commands=("installKVM" "installPVE" "installDocker" "installK8s" "installRedis" "install_hadoop" "install_mysql" "install_mysql")
 
     # 创建一个复选框，让用户选择要执行的命令
     cmd=(dialog --separate-output --checklist "请选择要执行的命令：" 22 76 16)
@@ -355,27 +388,30 @@ server_menu() {
     # 执行用户选择的命令
     for choice in $choices; do
         case ${commands[$choice]} in
-        installKVM)
-            installKVM
-            ;;
-        installDocker)
-            installDocker
-            ;;
-        installK8s)
-            installK8s
-            ;;
-        installRedis)
-            installRedis
-            ;;
-        install_hadoop)
-            install_hadoop
-            ;;
-        install_mysql)
-            install_mysql
-            ;;
-        install_zookeeper)
-            install_zookeeper
-            ;;
+            installKVM)
+                installKVM
+                ;;
+            installPVE)
+                installPVE
+                ;;
+            installDocker)
+                installDocker
+                ;;
+            installK8s)
+                installK8s
+                ;;
+            installRedis)
+                installRedis
+                ;;
+            install_hadoop)
+                install_hadoop
+                ;;
+            install_mysql)
+                install_mysql
+                ;;
+            install_zookeeper)
+                install_zookeeper
+                ;;
         esac
     done
 
