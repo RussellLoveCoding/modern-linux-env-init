@@ -377,5 +377,89 @@ setupServerEnv() {
 }
 
 server_menu() {
-    echo
+    if [ $L = "en" ]; then
+        choices=$(whiptail --title "component options" --checklist \
+            "Please selected which you want to install：" 20 78 15 \
+            "1" "setup neovim" OFF \
+            "2" "setup zsh" OFF \
+            "3" "setup tmux" OFF \
+            "4" "setup tons of packages by DPKG" OFF \
+            "5" "setup ssh" \
+            "6" "setup shell" \
+            "7" "setup enhanced tools" \
+            "8" "setup other basic tools" \
+            "9" "setup all" \
+            3>&1 1>&2 2>&3)
+    else
+        choices=$(whiptail --title "安装选项" --checklist \
+            "请选择你要安装的项目：" 20 78 15 \
+            "1" "安装neovim" OFF \
+            "2" "安装zsh" OFF \
+            "3" "安装tmux" OFF \
+            "4" "通过DPKG安装大量包" OFF \
+            "5" "安装ssh" OFF \
+            "6" "安装shell" OFF \
+            "7" "安装增强工具" OFF \
+            "8" "安装其他基础工具" OFF \
+            "9" "安装所有" OFF \
+            3>&1 1>&2 2>&3)
+    fi
+
+    installDocker
+    installK8s
+    installKVM
+    installPVE
+    installRedis
+    install_hadoop
+    install_mysql
+    install_server_stuff
+    install_zookeeper
+    server_menu
+    setupServerEnv
+    uninstallDocker
+
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        IFS=" " read -r -a array <<<"$choices"
+        for choice in "${array[@]}"; do
+            case $choice in
+            "\"1\"")
+                setupNeovim
+                # 在这里添加安装neovim的命令
+                ;;
+            "\"2\"")
+                setupShell
+
+                # 在这里添加安装zsh的命令
+                ;;
+            "\"3\"")
+                setupTmux
+                # 在这里添加安装tmux的命令
+                ;;
+
+            "\"4\"") # 在这里添加安装大量包的命令
+                setupToolsByDPKG
+                ;;
+
+            "\"5\"")
+                sshConfig
+                ;;
+            "\"6\"")
+                setupShell
+                ;;
+            "\"7\"")
+                installEnhancedTools
+                ;;
+            "\"8\"")
+                installOtherBasicTools
+                ;;
+            "\"9\"")
+                setupAll
+                ;;
+            esac
+        done
+        main
+    else
+        echo "你取消了操作。"
+    fi
 }

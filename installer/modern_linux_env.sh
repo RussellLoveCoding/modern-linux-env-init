@@ -291,7 +291,7 @@ main() {
     if [ $L = "en" ]; then
         OPTION=$(whiptail --title " PveTools   Version : 2.3.9 " --menu "
 Github: https://github.com/ivanhao/pvetools
-Please choose:" 25 60 15 \
+Please choose:" 25 100 15 \
             "a" "setup basic environment, including zsh, tmux, nvim, ssh, install tons of basic pkgs" \
             "b" "setup development environment, including github, programming language compiler, language server, etc." \
             "c" "setup server environment, including docker, k8s, redis/mysql database, etc." \
