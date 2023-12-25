@@ -129,6 +129,8 @@ init() {
     execLogFile='/tmp/modern_linux_init_exec.log'
     modernEnvPath="/tmp/modern-linux-env-init"
     modernEnvHomeDir="${modernEnvPath}/homedir"
+    containerDir="${modernEnvPath}/containers"
+    
 
     # command redefinition, in case alias
     installType='sudo apt-get -y install'

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 source common.sh
 
@@ -158,18 +158,18 @@ installPythonByPyenv() {
         python-dateutil
         """
 
-    pip install lxml >/dev/null
-    pip install ipaddress >/dev/null
-    pip install python-dateutil >/dev/null
-    pip install apscheduler >/dev/null
-    pip install mycli >/dev/null
-    pip install aiohttp >/dev/null
-    pip install datetime >/dev/null
-    pip install timeit >/dev/null
-    pip install docker-compose >/dev/null
-    pip install chardet >/dev/null
-    pip install supervisor >/dev/null
-    pip install python-dateutil >/dev/null
+    pip install lxml 1>/dev/null 2>&1
+    pip install ipaddress 1>/dev/null 2>&1
+    pip install python-dateutil 1>/dev/null 2>&1
+    pip install apscheduler 1>/dev/null 2>&1
+    pip install mycli 1>/dev/null 2>&1
+    pip install aiohttp 1>/dev/null 2>&1
+    pip install datetime  1>/dev/null 2>&1
+    pip install timeit  1>/dev/null 2>&1
+    pip install docker-compose  1>/dev/null 2>&1
+    pip install chardet  1>/dev/null 2>&1
+    pip install supervisor  1>/dev/null 2>&1
+    pip install python-dateutil  1>/dev/null 2>&1
 
     ############## pyenv 使用 ##############
     ## pyenv安装不同版的python
@@ -456,6 +456,11 @@ installRclone() {
     echoContent green " ---> installing rclone"
     curl https://rclone.org/install.sh | sudo bash
     rclone config
+}
+
+setupVGPU() {
+    $upgarde 1>/dev/null 2>&1
+    $installType xorg-dev pkg-config 1>/dev/null 2>&1
 }
 
 vpsSwissArmyKnife() {
