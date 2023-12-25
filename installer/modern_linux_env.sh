@@ -85,6 +85,7 @@ basic_menu() {
             "7" "setup enhanced tools" \
             "8" "setup other basic tools" \
             "9" "setup all" \
+            "10" "attach nfs" \
             3>&1 1>&2 2>&3)
     else
         choices=$(whiptail --title "安装选项" --checklist \
@@ -98,6 +99,7 @@ basic_menu() {
             "7" "安装增强工具" OFF \
             "8" "安装其他基础工具" OFF \
             "9" "安装所有" OFF \
+            "10" "挂载 nfs" OFF \
             3>&1 1>&2 2>&3)
     fi
 
@@ -138,6 +140,9 @@ basic_menu() {
                 ;;
             "\"9\"")
                 setupAll
+                ;;
+            "\"10\"")
+                setupDisk
                 ;;
             esac
         done
