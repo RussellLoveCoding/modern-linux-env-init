@@ -7,6 +7,7 @@ source basic_installer.sh
 source common.sh
 source dev_env.sh
 source server_env.sh
+source vps.sh
 export LANG=en_US.UTF-8
 
 #js whiptail --title "Success" --msgbox "c" 10 60
@@ -80,12 +81,12 @@ basic_menu() {
             "2" "setup zsh" OFF \
             "3" "setup tmux" OFF \
             "4" "setup tons of packages by DPKG" OFF \
-            "5" "setup ssh" \
-            "6" "setup shell" \
-            "7" "setup enhanced tools" \
-            "8" "setup other basic tools" \
-            "9" "setup all" \
-            "10" "attach nfs" \
+            "5" "setup ssh" OFF \
+            "6" "setup shell" OFF \
+            "7" "setup enhanced tools" OFF \
+            "8" "setup other basic tools" OFF \
+            "9" "setup all" OFF \
+            "10" "attach nfs" OFF \
             3>&1 1>&2 2>&3)
     else
         choices=$(whiptail --title "安装选项" --checklist \
@@ -292,6 +293,67 @@ dev_menu() {
     fi
 }
 
+vps_menu() {
+
+    # 定义所有的安装命令
+    if [ $L = "en" ]; then
+        choices=$(whiptail --title "component options" --checklist \
+            "Please selected which you want to install：" 20 78 15 \
+            "0" "deploy container manager portainer" OFF \
+            "1" "deploy password service vault warden" OFF \
+            "2" "deploy digital service calibre web" OFF \
+            "3" "deploy home assistant service" OFF \
+            "4" "deploy stream media service jellyfin" OFF \
+            "5" "deploy code server" OFF \
+            "6" "deploy authentication service" OFF \
+            3>&1 1>&2 2>&3)
+    else
+        choices=$(whiptail --title "安装选项" --checklist \
+            "请选择你要安装的项目：" 20 78 15 \
+            "0" "部署 容器管理工具 portainer" OFF \
+            "1" "部署 密码服务 vaultwarden" OFF \
+            "2" "部署 电子书服务 calibre web" OFF \
+            "3" "部署 家庭助手服务 home assistant" OFF \
+            "4" "部署 流媒体服务器 jellyfin" OFF \
+            "5" "部署 即时开发环境 code server" OFF \
+            "6" "部署 统一登陆平台" OFF \
+            3>&1 1>&2 2>&3)
+    fi
+
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        IFS=" " read -r -a array <<<"$choices"
+        for choice in "${array[@]}"; do
+            case $choice in
+            "\"0\"")
+                deployPortainer
+                ;;
+            "\"1\"")
+                deployVaultwarden
+                ;;
+            "\"2\"")
+                deployCalibreWeb
+                ;;
+            "\"3\"")
+                deployHomeAssistant
+                ;;
+            "\"4\"")
+                deployJellyfin
+                ;;
+            "\"5\"")
+                deployCodeServer
+                ;;
+            "\"6\"")
+                deploy
+                ;;
+            esac
+        done
+        main
+    else
+        echo "你取消了操作。"
+    fi
+}
+
 main() {
     if [ $L = "en" ]; then
         OPTION=$(whiptail --title " PveTools   Version : 2.3.9 " --menu "
@@ -300,6 +362,7 @@ Please choose:" 25 100 15 \
             "a" "setup basic environment, including zsh, tmux, nvim, ssh, install tons of basic pkgs" \
             "b" "setup development environment, including github, programming language compiler, language server, etc." \
             "c" "setup server environment, including docker, k8s, redis/mysql database, etc." \
+            "d" "deploy some personal service" \
             3>&1 1>&2 2>&3)
     else
         OPTION=$(whiptail --title " PveTools   Version : 2.3.9 " --menu "
@@ -308,6 +371,7 @@ Github: https://github.com/ivanhao/pvetools
             "a" "设置基本环境，包括zsh、tmux、nvim、ssh，安装大量基本软件包。" \
             "b" "设置开发环境，包括github、编程语言编译器、语言服务器等。" \
             "c" "设置服务器环境，包括docker、k8s、redis/mysql数据库等。" \
+            "d" "部署一些私人服务" \
             3>&1 1>&2 2>&3)
     fi
     exitstatus=$?
@@ -323,6 +387,10 @@ Github: https://github.com/ivanhao/pvetools
             ;;
         c)
             server_menu
+            main
+            ;;
+        d)
+            vps_menu
             main
             ;;
         L)

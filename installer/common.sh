@@ -129,7 +129,6 @@ init() {
     execLogFile='/tmp/modern_linux_init_exec.log'
     modernEnvPath="/tmp/modern-linux-env-init"
     modernEnvHomeDir="${modernEnvPath}/homedir"
-    containerDir="${modernEnvPath}/containers"
     
 
     # command redefinition, in case alias
@@ -219,8 +218,8 @@ check_network() {
     fi
 
     if ! curl -s -o /dev/null -w "%{http_code}" --head --request GET https://github.com/ --max-time 3| grep -qE "200|301"; then
-        echoCOntent red "github.com is not reachable"
-        echoCOntent red "please check your network, nothing installed, exited"
+        echoContent red "github.com is not reachable"
+        echoContent red "please check your network, nothing installed, exited"
         exit 1
     fi
 
