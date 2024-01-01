@@ -254,7 +254,8 @@ setupTmux() {
 setupDisk() {
     $upgrade 1>/dev/null 2>&1
     $installType nfs-common  1>/dev/null 2>&1
-    sudo echo "192.168.100.3:/volume1/root /home/hin/nas nfs defaults 0 0" >> /etc/fstab
+    [ ! -d /home/hin/nas ] && mkdir /home/hin/nas
+    sudo echo "192.168.100.3:/volume1/homes/admin /home/hin/nas nfs defaults 0 0" >> /etc/fstab
     sudo mount -a
 }
 

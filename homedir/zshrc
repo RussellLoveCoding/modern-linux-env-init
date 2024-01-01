@@ -124,7 +124,7 @@ if command -v pyenv 1>/dev/null 2>&1; then
 fi
 
 # 路径环境变量
-export PATH=$PATH:/usr/local/bin:$HOME/opt/bin
+export PATH=$PATH:/usr/local/bin:$HOME/opt/bin:$HOME/.local/bin
 # export PATH=/opt/compiler/gcc-8.2/bin:$PATH
 
 # golang env
