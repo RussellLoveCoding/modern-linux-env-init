@@ -202,7 +202,7 @@ EOT
 installDocker() {
 
     command_exists docker &&
-        echoContent green " ---> docker have been installed, nothing installed" && return
+        echoContent green " ---> docker have been installed, nothing installed, continue to configure" 
 
     command_exists docker || {
         pushd /tmp

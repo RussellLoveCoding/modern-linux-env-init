@@ -5,8 +5,23 @@ services:
     image: vaultwarden/server:latest
     container_name: vaultwarden
     restart: always
+    environment:
+      DOMAIN: "https://xinary.me/vault"  # 您的域名；Vaultwarden 需要知道它是 https 才能正确处理附件
     volumes:
       - ./vw-data:/data
-    ports:
-      - ":80"
 
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - $HOME/.secrets/xinary.me.pem:/etc/ssl/certs/xinary.me.pem
+      - $HOME/.secrets/xinary.me.key:/etc/ssl/private/xinary.me.key
+      - $PWD:/data
+      # - ./templates:/etc/nginx/templates
+    ports:
+      - "80:80"
+      - "443:443"
+    # environment:
+    #   - NGINX_HOST=xinary.me

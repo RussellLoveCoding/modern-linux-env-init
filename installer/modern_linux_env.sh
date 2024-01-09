@@ -115,8 +115,6 @@ basic_menu() {
                 ;;
             "\"2\"")
                 setupShell
-
-                # 在这里添加安装zsh的命令
                 ;;
             "\"3\"")
                 setupTmux
@@ -154,7 +152,78 @@ basic_menu() {
 }
 
 server_menu() {
-    echo
+    if [ $L = "en" ]; then
+        choices=$(
+            whiptail --title "component options" --checklist \
+                "Please selected which you want to install：" 20 78 15 \
+                "1" "install Docker" OFF \
+                "2" "install K8s" OFF \
+                "3" "install KVM" OFF \
+                "4" "install PVE" OFF \
+                "5" "install Redis" OFF \
+                "6" "install hadoop" OFF \
+                "7" "install mysql" OFF \
+                "8" "install server_stuff" OFF \
+                "9" "install zookeeper" OFF \
+                3>&1 1>&2 2>&3
+        )
+    else
+        choices=$(whiptail --title "安装选项" --checklist \
+            "请选择你要安装的项目：" 20 78 15 \
+                "1" "安装 Docker" OFF \
+                "2" "安装 K8s" OFF \
+                "3" "安装 KVM" OFF \
+                "4" "安装 PVE" OFF \
+                "5" "安装 Redis" OFF \
+                "6" "安装 hadoop" OFF \
+                "7" "安装 mysql" OFF \
+                "8" "安装 server_stuff" OFF \
+                "9" "安装 zookeeper" OFF \
+            3>&1 1>&2 2>&3)
+    fi
+
+                
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        IFS=" " read -r -a array <<<"$choices"
+        for choice in "${array[@]}"; do
+            case $choice in
+            "\"1\"")
+                installDocker
+                # 在这里添加安装neovim的命令
+                ;;
+            "\"2\"")
+                installK8s
+                ;;
+            "\"3\"")
+                installKVM
+                # 在这里添加安装tmux的命令
+                ;;
+            "\"4\"") # 在这里添加安装大量包的命令
+                installPVE
+                ;;
+
+            "\"5\"")
+                installRedis
+                ;;
+            "\"6\"")
+                install_hadoop
+                ;;
+            "\"7\"")
+                install_mysql
+                ;;
+            "\"8\"")
+                install_server_stuff
+                ;;
+            "\"9\"")
+                install_zookeeper
+                ;;
+            esac
+        done
+        main
+    else
+        echo "你取消了操作。"
+    fi
 }
 
 dev_menu() {
