@@ -4,7 +4,7 @@ source common.sh
 
 installPkgBundle() {
     $upgrade
-    $installType libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev bison libxml2-dev libxslt-dev libevent-dev
+    $installType libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev bison libxml2-dev libxslt-dev libevent-dev  libmysqlclient-dev
 }
 
 installGithub() {
