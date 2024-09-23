@@ -282,18 +282,12 @@ installK8s() {
 
 }
 
-installPVE() {
-    sed -rin 's~(.*)~# \1~g;' /etc/apt/sources.list.d/pve-enterprise.list
-    echo "deb http://download.proxmox.com/debian/pve buster pve-no-subscription" >>/etc/apt/sources.list.d/pve-enterprise.list
-    $upgrade
-    apt-get install vim lrzsz unzip net-tools curl screen uuid-runtime git -y
-    apt dist-upgrade -y
 
-    export LC_ALL=en_US.UTF-8
-    apt update && apt -y install git && git clone https://github.com/ivanhao/pvetools.git
-    cd pvetools
-    ./pvetools.sh
+install_istoreOS_on_pve() {
+    #
+    echo
 }
+
 installKVM() {
     # 安装所需的软件包：
     $installType bridge-utils cpu-checker libvirt-clients libvirt-daemon qemu qemu-kvm 1>/dev/null

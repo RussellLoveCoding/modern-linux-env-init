@@ -261,6 +261,13 @@ setupDisk() {
     # mklink /D C:\path\to\symlink \\network\path
 }
 
+lookupDiskInfo(){
+    sudo lvdisplay
+    sudo vgdisplay
+    sudo pvdisplay
+    lsblk 
+}
+
 uninstallTmux() {
     $removeType tmux
 }

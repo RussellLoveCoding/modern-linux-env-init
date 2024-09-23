@@ -167,8 +167,14 @@ init() {
         upgrade="sudo apt-get update"
         removeType='sudo apt-get -y autoremove'
         ;;
+    "istoreos")
+        release="istoreos"
+        installType='opkg install'
+        upgrade="opkg update"
+        removeType='opkg remove'
+        ;;
     *)
-        echo "不支持的系统"
+        echo "不支持该系统类型 $distro"
         exit 1
         ;;
     esac
@@ -189,6 +195,14 @@ init() {
 
     # fetch necessary configuration file.
     [ -d $modernEnvPath ] || {
+
+        # 如果系统是 istoreos，则先安装依赖
+        if [ "$distro" == "istoreos" ]; then
+            echoContent green " ---> installing dependencies"
+            $(upgrade)
+            $(installType) git git-http 
+        fi
+
         echoContent green " --> fetching necessary configuration file from github"
         git clone https://github.com/RussellLoveCoding/modern-linux-env-init.git $modernEnvPath 1>/dev/null 2>&1
     }
