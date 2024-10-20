@@ -19,6 +19,27 @@ pve_menu() {
     echo
 }
 
+install_synology() {
+    synouser --setpw root password
+}
+
+install_ubuntu_server() {
+    sudo apt-get update
+    sudo apt-get install qemu-guest-agent
+    sudo systemctl start qemu-guest-agent
+    sudo systemctl enable qemu-guest-agent
+
+    apt install -y linux-image-6.5.0-35-generic linux-headers-6.5.0-35-generic
+    apt install -y "build-*" "dkms"
+}
+
+disable_unnecessary_service_win() {
+    # Intel(R) SUR QC Software Asset Manager
+    # windows antimalware difender
+    # inter system usage report service
+    echo
+}
+
 install_win10_ltsc() {
     # 不要开 内存和cpu的热插拔
     echoContent green "请准备好你的镜像并上传到此目录 /var/lib/vz/template/iso"
@@ -48,30 +69,67 @@ scsihw: virtio-scsi-single # 硬盘总线方式，默认
 smbios1: uuid=885e6244-3277-42fe-982c-8ebb6dd397e3 # 这些是自动生成的
 vmgenid: d1989818-048f-4da2-9db0-1c5e9a1f9f9c
 "
+
 }
 
 install_istoreos() {
     # credit: https://blog.welain.com/archives/183/
-    echo
+
+    # 填写你的 VMID
+    VMID=100
+    URL="https://fw.koolcenter.com/iStoreOS/x86_64/"
+
+    # 获取网页内容并提取最新的镜像文件链接
+    LATEST_IMG=$(wget -qO- "$URL" | grep -oP 'istoreos-[0-9.]+-[0-9]+-x86-64-squashfs-combined.img.gz' | sort -V | tail -n 1)
+
+    # 检查是否找到最新的镜像文件
+    if [ -z "$LATEST_IMG" ]; then
+        echo "未找到最新的镜像文件。"
+    fi
+
+    DOWNLOAD_URL="https://fw0.koolcenter.com/iStoreOS/x86_64/$LATEST_IMG"
+
+    # 下载最新的镜像文件
+    cd /var/lib/vz/template/iso
+    wget -q --show-progress --max-redirect=5 "$DOWNLOAD_URL"
+    gzip -d "$LATEST_IMG"
+    IMG_NAME=$(echo "$LATEST_IMG"|\sed -rn 's~.gz~~g;/.*/p')
+    qm importdisk $VMID "/var/lib/vz/template/iso/$IMG_NAME" local-lvm
+
+    # 安装 qemu-guest-agent.
+
+    # 上游路由器 LAN 口所属 IP 网段: 192.168.100.0/24
+
+    # pve: eth1, virtio1, virtio2
+    #     - 上游路由器 LAN 口 <----> PVE eth1 管理口,
+    #     - PVE-virtio1 bridge <----> eth1 管理口, PVE-virtio1 IP 为 192.168.100.x
+    #     - PVE-virtio2 bridge <-----> VM_router_istoreos-virtio2, PVE-virtio2 IP 为 192.168.2.x
+
+    # VM_router_istoreos: virtio1(WAN) , virtio2(LAN) , eth2(LAN) , eth3(LAN) , eth4(LAN)
+    #     - VM_router_istoreos-virtio1 bridged <-----> PVE-virtio1, VM_router_istoreos-virtio1 IP 为 192.168.100.x
+    #     - virtio2 <-----> PVE-virtio2, VM_router_istoreos-virtio2 IP 为 192.168.2.1, 也就是 istoreOS 路由器新建一个子网 192.168.2.0/24
+    #     - eth2-4 <--------> other downstream devices
+
+    # VM_ubuntu: virtio1
+    #     - vm_ubuntu-virtio1 <------> PVE-virtio2
+
 }
 
 install_discord_dark_theme() {
     # credit https://github.com/Weilbyte/PVEDiscordDark
-    bash <(curl -s https://raw.githubusercontent.com/Weilbyte/PVEDiscordDark/master/PVEDiscordDark.sh ) install
+    bash <(curl -s https://raw.githubusercontent.com/Weilbyte/PVEDiscordDark/master/PVEDiscordDark.sh) install
 }
 
 uninstall_discord_dark_theme() {
-echo
+    echo
 }
-
 
 hdmi_passthrough() {
     echo
 }
 
-
 setup_SR_IOV() {
-    lscpu |\grep -qEi 'vendor.*intel'  || {
+    lscpu | \grep -qEi 'vendor.*intel' || {
         echoContent red "只支持 Intel CPU"
         echoContent red "Only support Intel CPU"
         return 1
@@ -119,7 +177,7 @@ This installtion process needs you machine reboot multitimes.
 
     # 辅助检查安装结果命令: modinfo i915 | \grep --color vf
 
-    # in order to enable the VFs, a sysfs attribute must be set. Install sysfsutils, then do echo 
+    # in order to enable the VFs, a sysfs attribute must be set. Install sysfsutils, then do echo
     apt install -y sysfsutils
     if [ $(lspci | \grep VGA | wc -l) -eq 1 ]; then
         gpu_id=$(lspci | \grep VGA | awk '{print $1}' | \grep -Eio '[0-9]{2}:[0-9]{2}')
@@ -132,7 +190,7 @@ This installtion process needs you machine reboot multitimes.
     echo "你希望 核显gpu 虚拟出多少个 vgpu, 1个性能最强，7个最低, 可选数量: 1-7"
     read -r divided_vgpu_cnt
     if ! \grep -qEi "devices/pci0000:00/0000:${gpu_id}.0/sriov_numvfs" /etc/sysfs.conf; then
-        echo "devices/pci0000:00/0000:${gpu_id}.0/sriov_numvfs = ${divided_vgpu_cnt}" > /etc/sysfs.conf
+        echo "devices/pci0000:00/0000:${gpu_id}.0/sriov_numvfs = ${divided_vgpu_cnt}" >/etc/sysfs.conf
     fi
 
     PARAM_IOMMU_ON_INTEL="intel_iommu=on"
@@ -140,39 +198,55 @@ This installtion process needs you machine reboot multitimes.
     PARAM_I915_VGPU="i915.enable_guc=3 i915.max_vfs=7"
     #  the kernel commandline needs to be adjusted: nano /etc/default/grub and change GRUB_CMDLINE_LINUX_DEFAULT to intel_iommu=on i915.enable_guc=3 i915.max_vfs=7, or add to it if you have other arguments there already.
     if ! \grep -qEi "^GRUB_CMDLINE_LINUX_DEFAULT.*${PARAM_IOMMU_ON_INTEL}" /etc/default/grub; then
-        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]+)\"~\1 ${PARAM_IOMMU_ON_INTEL}\"~g;" /etc/default/grub
+        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*)\"~\1 ${PARAM_IOMMU_ON_INTEL}\"~g;" /etc/default/grub
     fi
     if ! \grep -qEi "^GRUB_CMDLINE_LINUX_DEFAULT.*${PARAM_I915_VGPU}" /etc/default/grub; then
-        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]+)\"~\1 ${PARAM_I915_VGPU}\"~g;" /etc/default/grub
+        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*)\"~\1 ${PARAM_I915_VGPU}\"~g;" /etc/default/grub
     fi
     if ! \grep -qEi "^GRUB_CMDLINE_LINUX_DEFAULT.*${PARAM_IOMMU_PT}" /etc/default/grub; then
-        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]+)\"~\1 ${PARAM_IOMMU_PT}\"~g;" /etc/default/grub
+        \sed -rin "s~(^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*)\"~\1 ${PARAM_IOMMU_PT}\"~g;" /etc/default/grub
     fi
+
+    PARAM_BLACK_LIST="options vfio_iommu_type1 allow_unsafe_interrupts=1"
+    if ! \grep -iq "^${PARAM_BLACK_LIST}" /etc/modprobe.d/pve-blacklist.conf; then
+        echo "${PARAM_BLACK_LIST}" >>/etc/modprobe.d/pve-blacklist.conf
+    fi
+
+    VFIO_PATTERN="vfio
+vfio_iommu_type1
+vfio_pci
+vfio_virqfd"
+
+    # 定义文件路径
+    MODULE_FILE="/etc/modules"
+    (awk 'BEGIN{RS=""; FS="\n"} /vfio\nvfio_iommu_type1\nvfio_pci\nvfio_virqfd/ {found=1} END{if (found) print "yes"; else print "no"}' $MODULE_FILE | \grep -q yes) || echo "$VFIO_PATTERN" >>$MODULE_FILE
 
     update-grub
     update-initramfs -u
-    
+    update-initramfs -u -k all
+    update-pciids
+
     echoContent red "即将重启，请确保保存好相关资料。"
     echoContent red "立即重启请输入 Y/y，稍后手动重启请输入 N/n"
     read -r isreboot
     case "$isreboot" in
-        [Yy]*)
-            echo "系统即将重启..."
-            reboot
-            ;;
-        [Nn]*)
-            echo "请稍后手动重启系统。"
-            ;;
-        *)
-            echo "无效的输入，请输入 Y/y 或 N/n。"
-            ;;
+    [Yy]*)
+        echo "系统即将重启..."
+        reboot
+        ;;
+    [Nn]*)
+        echo "请稍后手动重启系统。"
+        ;;
+    *)
+        echo "无效的输入，请输入 Y/y 或 N/n。"
+        ;;
     esac
 }
 
 # 撤销上述步骤的影响
 undo_side_effect_sr_iov() {
-    dkms remove -m i915-sriov-dkms -v 6.1
-    dkms install -m i915-sriov-dkms -v 6.1
+    # dkms remove -m i915-sriov-dkms -v 6.1
+    # dkms install -m i915-sriov-dkms -v 6.1
 
     apt autoremove -y "pve-headers-$(uname -r)" "proxmox-kernel-$(uname -r)" "build-*" "dkms" "pv" "sysfsutils"
 
@@ -180,7 +254,7 @@ undo_side_effect_sr_iov() {
         rm -rf ${dir}
     done
 
-    for dir in /usr/src/i915-sriov-dkms*;do
+    for dir in /usr/src/i915-sriov-dkms*; do
         rm -rf ${dir}
     done
 
@@ -224,7 +298,6 @@ installPVE() {
     # ./pvetools.sh
 
 }
-
 
 display_cpu_power_costing_temperature_etc_info_on_web_pabe() {
     # 一键给PVE增加温度和cpu频率显示，NVME，机械固态硬盘信息

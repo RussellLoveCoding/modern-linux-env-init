@@ -9,6 +9,25 @@ config_static_ip_address_for_os_router() {
     echo
 }
 
+disable_docker() {
+    /etc/init.d/dockerd
+}
+
+install_qemu_agent() {
+    # 安装
+    opkg update
+    opkg install qemu-ga
+
+    # 设置脚本权限
+    chmod +x /etc/init.d/qemu-ga
+
+    # 启用服务
+    /etc/init.d/qemu-ga enable
+
+    # 重启
+    reboot
+}
+
 # 防火墙在上游网段开放端口
 step1_allow_http_s_ssh_access_on_wan() {
 
@@ -32,7 +51,7 @@ config rule
 }
 
 step1_dot_2_config_static_ip_address() {
-    echoContent green "here is the correct /etc/config/network example to set static ip address and new subnet" 
+    echoContent green "here is the correct /etc/config/network example to set static ip address and new subnet"
     network_conf_example="
 config interface 'wan'
 	option device 'eth0'
@@ -100,7 +119,7 @@ step3_config_new_subnetwork_address() {
     sed -rin "s~192.168.100.1~$subnet_addr~;" /etc/config/network
 
     echoContent skyBlue "已经修改配置文件, 如下"
-    \grep "config interface 'lan'" -A 6 /etc/config/network 
+    \grep "config interface 'lan'" -A 6 /etc/config/network
 
     echoContent skyBlue "正在重启网络..."
     /etc/init.d/network restart
@@ -111,7 +130,7 @@ step3_config_new_subnetwork_address() {
     else
         echoContent red "网络重启失败，状态码：$status"
     fi
-    
+
 }
 
 step4_install_apps() {
@@ -122,8 +141,8 @@ install_passwall() {
     cd /tmp
     base_url="https://github.com/bcseputetto/Are-u-ok/releases/latest"
     download_page=$(wget -qO- $base_url)
-    passwall_pkg=$(echo "$download_page"| \grep -Eio '>passwall[^0-9][^<]+x86_64[^<]+run' | sed -rn 's~>~~p' |sort|uniq)
-    passwall2_pkg=$(echo "$download_page"| \grep -Eio '>passwall2[^<]+x86_64[^<]+run' | sed -rn 's~>~~p'|sort|uniq)
+    passwall_pkg=$(echo "$download_page" | \grep -Eio '>passwall[^0-9][^<]+x86_64[^<]+run' | sed -rn 's~>~~p' | sort | uniq)
+    passwall2_pkg=$(echo "$download_page" | \grep -Eio '>passwall2[^<]+x86_64[^<]+run' | sed -rn 's~>~~p' | sort | uniq)
 
     # 下载软件包
     dlink_base="https://github.com/bcseputetto/Are-u-ok/releases/download/iStoreOS/"
@@ -141,7 +160,7 @@ install_passwall() {
     api_url="https://api.github.com/repos/$repo/releases/latest"
     # 获取最新发布的资产 URL
     rm /tmp/*run
-    asset_url=$(curl -s $api_url | grep "browser_download_url" | cut -d '"' -f 4 | \grep -Ei '.*passwall.*x86_64.*\.run$') 
+    asset_url=$(curl -s $api_url | grep "browser_download_url" | cut -d '"' -f 4 | \grep -Ei '.*passwall.*x86_64.*\.run$')
     sh /tmp/*run
 
     echo "going to download the following package"
@@ -156,7 +175,7 @@ install_passwall() {
 install_unblock_netease_music() {
     repo="UnblockNeteaseMusic/luci-app-unblockneteasemusic"
     api_url="https://api.github.com/repos/$repo/releases/latest"
-    
+
     # 获取最新发布的资产 URL
     asset_url=$(curl -s $api_url | grep "browser_download_url" | cut -d '"' -f 4 | \grep -E '.*\.ipk$')
 
