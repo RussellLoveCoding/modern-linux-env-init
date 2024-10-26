@@ -117,15 +117,15 @@ unalias_list() {
 
 init() {
 
-    test=0
-    test=$1
+    # test=0
+    # test=$1
     # installation total progress
-    totalProgress=1
+    # totalProgress=1
 
     # path definition
     globalInstallDir='/usr/local'
     localInstallDir="$HOME/opt"
-    errLogFile='/tmp/modern_linux_init_error.log'
+    # errLogFile='/tmp/modern_linux_init_error.log'
     execLogFile='/tmp/modern_linux_init_exec.log'
     modernEnvPath="/tmp/modern-linux-env-init"
     modernEnvHomeDir="${modernEnvPath}/homedir"
@@ -147,7 +147,19 @@ init() {
     arch=$(uname -m)
 
     # detect distribution
-    distro=$(cat /etc/*-release | grep '^ID=' | cut -d'=' -f2)
+    # distro=$(cat /etc/*-release | grep '^ID=' | cut -d'=' -f2)
+
+    # detect distribution
+    if [ -f /etc/os-release ]; then
+        distro=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr '[:upper:]' '[:lower:]')
+    elif command -v lsb_release >/dev/null 2>&1; then
+        distro=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+    elif [ "$(uname -o)" = "Cygwin" ]; then
+        distro="cygwin"
+    else
+        distro=$(cat /etc/*-release | grep '^ID=' | cut -d'=' -f2 | tr '[:upper:]' '[:lower:]')
+    fi
+
     case "$distro" in
     "centos")
         release="centos"
@@ -166,6 +178,12 @@ init() {
         installType='sudo apt-get -y install'
         upgrade="sudo apt-get update"
         removeType='sudo apt-get -y autoremove'
+        ;;
+    "cygwin")
+        release="cygwin"
+        installType='apt-cyg install'
+        upgrade="apt-cyg update"
+        removeType='apt-cyg remove'
         ;;
     "istoreos")
         release="istoreos"
@@ -252,6 +270,11 @@ if ! command_exists  dialog; then
     $installType dialog 1>/dev/null
 fi
 
-if ! command_exists  whiptail; then
-    $installType whiptail 1>/dev/null
+if [ "$distro" == "cygwin" ]; then
+    menu_tool="dialog"
+else
+    if ! command_exists  whiptail; then
+        $installType whiptail 1>/dev/null
+    fi
+    menu_tool="whiptail"
 fi

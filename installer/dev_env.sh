@@ -2,6 +2,15 @@
 set -e
 source common.sh
 
+install_powershell() {
+    echo
+    sudo apt install -y wget apt-transport-https software-properties-common
+    wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main"
+    sudo apt update
+    sudo apt install -y powershell
+}
+
 installPkgBundle() {
     $upgrade
     $installType libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev bison libxml2-dev libxslt-dev libevent-dev  libmysqlclient-dev

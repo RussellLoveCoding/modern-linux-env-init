@@ -191,3 +191,23 @@ install_unblock_netease_music() {
 
     opkg install /tmp/*ipk
 }
+
+# 网络分流 英文： 
+network_traffic_diversion() {
+    # 大流量域名
+
+    # onedrive, 
+    large_flow_domains='
+files.1drv.com
+storage.live.com
+'
+
+    # direct domains
+    direct_domains='
+zaobao.com
+zaobao.com.sg
+'
+
+    cn_cdn_domains='
+    '
+}

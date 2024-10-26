@@ -10,7 +10,7 @@ source server_env.sh
 source vps.sh
 export LANG=en_US.UTF-8
 
-#js whiptail --title "Success" --msgbox "c" 10 60
+#js $menu_tool --title "Success" --msgbox "c" 10 60
 # if [ `export|grep 'LC_ALL'|wc -l` = 0 ];then
 #     if [ `grep "LC_ALL" /etc/profile|wc -l` = 0 ];then
 #         echo "export LC_ALL='en_US.UTF-8'" >> /etc/profile
@@ -25,15 +25,15 @@ export LANG=en_US.UTF-8
 #-----------------functions--start------------------#
 example() {
     #msgbox
-    whiptail --title "Success" --msgbox "
+    $menu_tool --title "Success" --msgbox "
 " 10 60
     #yesno
-    if (whiptail --title "Yes/No Box" --yesno "
+    if ($menu_tool --title "Yes/No Box" --yesno "
 " 10 60); then
         echo ""
     fi
     #password
-    PASSWORD=$(whiptail --title "Password Box" --passwordbox "
+    PASSWORD=$($menu_tool --title "Password Box" --passwordbox "
 Enter your password and choose Ok to continue.
                 " 10 60 3>&1 1>&2 2>&3)
     exitstatus=$?
@@ -43,7 +43,7 @@ Enter your password and choose Ok to continue.
 
     #input form
     NAME=$(
-        whiptail --title "
+        $menu_tool --title "
 Free-form Input Box
 " --inputbox "
 What is your pet's name?
@@ -75,7 +75,7 @@ checkWgetShowProgress() {
 
 basic_menu() {
     if [ $L = "en" ]; then
-        choices=$(whiptail --title "component options" --checklist \
+        choices=$($menu_tool --title "component options" --checklist \
             "Please selected which you want to install：" 20 78 15 \
             "1" "setup neovim" OFF \
             "2" "setup zsh" OFF \
@@ -89,7 +89,7 @@ basic_menu() {
             "10" "attach nfs" OFF \
             3>&1 1>&2 2>&3)
     else
-        choices=$(whiptail --title "安装选项" --checklist \
+        choices=$($menu_tool --title "安装选项" --checklist \
             "请选择你要安装的项目：" 20 78 15 \
             "1" "安装neovim" OFF \
             "2" "安装zsh" OFF \
@@ -154,7 +154,7 @@ basic_menu() {
 server_menu() {
     if [ $L = "en" ]; then
         choices=$(
-            whiptail --title "component options" --checklist \
+            $menu_tool --title "component options" --checklist \
                 "Please selected which you want to install：" 20 78 15 \
                 "1" "install Docker" OFF \
                 "2" "install K8s" OFF \
@@ -168,7 +168,7 @@ server_menu() {
                 3>&1 1>&2 2>&3
         )
     else
-        choices=$(whiptail --title "安装选项" --checklist \
+        choices=$($menu_tool --title "安装选项" --checklist \
             "请选择你要安装的项目：" 20 78 15 \
                 "1" "安装 Docker" OFF \
                 "2" "安装 K8s" OFF \
@@ -230,7 +230,7 @@ dev_menu() {
 
     # 定义所有的安装命令
     if [ $L = "en" ]; then
-        choices=$(whiptail --title "component options" --checklist \
+        choices=$($menu_tool --title "component options" --checklist \
             "Please selected which you want to install：" 20 78 15 \
             "1" "install  Batscore" OFF \
             "2" "install CommonDevLib" OFF \
@@ -256,7 +256,7 @@ dev_menu() {
             "22" "vpsSwissArmyKnife" OFF \
             3>&1 1>&2 2>&3)
     else
-        choices=$(whiptail --title "安装选项" --checklist \
+        choices=$($menu_tool --title "安装选项" --checklist \
             "请选择你要安装的项目：" 20 78 15 \
             "1" "installBatscore" OFF \
             "2" "installCommonDevLib" OFF \
@@ -366,7 +366,7 @@ vps_menu() {
 
     # 定义所有的安装命令
     if [ $L = "en" ]; then
-        choices=$(whiptail --title "component options" --checklist \
+        choices=$($menu_tool --title "component options" --checklist \
             "Please selected which you want to install：" 20 78 15 \
             "0" "deploy container manager portainer" OFF \
             "1" "deploy password service vault warden" OFF \
@@ -377,7 +377,7 @@ vps_menu() {
             "6" "deploy authentication service" OFF \
             3>&1 1>&2 2>&3)
     else
-        choices=$(whiptail --title "安装选项" --checklist \
+        choices=$($menu_tool --title "安装选项" --checklist \
             "请选择你要安装的项目：" 20 78 15 \
             "0" "部署 容器管理工具 portainer" OFF \
             "1" "部署 密码服务 vaultwarden" OFF \
@@ -425,7 +425,7 @@ vps_menu() {
 
 main() {
     if [ $L = "en" ]; then
-        OPTION=$(whiptail --title " PveTools   Version : 2.3.9 " --menu "
+        OPTION=$($menu_tool --title " PveTools   Version : 2.3.9 " --menu "
 Github: https://github.com/ivanhao/pvetools
 Please choose:" 25 100 15 \
             "a" "setup basic environment, including zsh, tmux, nvim, ssh, install tons of basic pkgs" \
@@ -434,7 +434,7 @@ Please choose:" 25 100 15 \
             "d" "deploy some personal service" \
             3>&1 1>&2 2>&3)
     else
-        OPTION=$(whiptail --title " PveTools   Version : 2.3.9 " --menu "
+        OPTION=$($menu_tool --title " PveTools   Version : 2.3.9 " --menu "
 Github: https://github.com/ivanhao/pvetools
 请选择相应的配置：" 25 60 15 \
             "a" "设置基本环境，包括zsh、tmux、nvim、ssh，安装大量基本软件包。" \
@@ -463,7 +463,7 @@ Github: https://github.com/ivanhao/pvetools
             main
             ;;
         L)
-            if (whiptail --title "Yes/No Box" --yesno "Change Language?
+            if ($menu_tool --title "Yes/No Box" --yesno "Change Language?
 修改语言？" 10 60); then
                 if [ $L = "zh" ]; then
                     L="en"
@@ -483,7 +483,7 @@ Github: https://github.com/ivanhao/pvetools
     fi
 }
 
-if (whiptail --title "Language" --yes-button "中文" --no-button "English" --yesno "Choose Language:
+if ($menu_tool --title "Language" --yes-button "中文" --no-button "English" --yesno "Choose Language:
 选择语言：" 10 60); then
     L="zh"
 else

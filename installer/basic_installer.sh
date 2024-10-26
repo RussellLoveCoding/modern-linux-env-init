@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 主菜单
-#set -x
+# set -x
 set -e
 source common.sh
 setupShell() {
@@ -97,7 +97,8 @@ setupSensitiveEnvironment() {
 }
 
 setupToolsByDPKG() {
-    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    echoContent skyBlue "\n Progress unknown/${totalProgress} : installing basic tools"
+    # echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
 
     # echoContent skyBlue "\n进度  $1/${totalProgress} : 安装工具"
     echoContent skyBlue "installing necassary tools"
@@ -143,7 +144,8 @@ installOtherBasicTools() {
 }
 
 setupNeovim() {
-    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    echoContent skyBlue "\n Progress unknown/${totalProgress} : installing basic tools"
+    # echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     command_exists nvim && {
         echoContent green " ---> nvim have been installed, continue to configure"
     }
@@ -216,7 +218,8 @@ uninstallNeovim() {
 }
 
 setupTmux() {
-    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    echoContent skyBlue "\n Progress unknown/${totalProgress} : installing basic tools"
+    # echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     # install tmux
     # sudo yum install -y libevent-devel.x86_64
     # cd $TMPDIR
@@ -273,7 +276,8 @@ uninstallTmux() {
 }
 
 installEnhancedTools() {
-    echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
+    echoContent skyBlue "\n Progress unknown/${totalProgress} : installing basic tools"
+    # echoContent skyBlue "\n Progress $1/${totalProgress} : installing basic tools"
     if [ ! -d ~/.fzf ]; then
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf 1>/dev/null
         ~/.fzf/install
