@@ -1,0 +1,33 @@
+{
+    // 参考 https://github.com/microsoft/winget-cli/blob/master/doc/Settings.md
+    "$schema": "https://aka.ms/winget-settings.schema.json",
+
+    // For documentation on these settings, see: https://aka.ms/winget-settings
+    // "source": {
+    //    "autoUpdateIntervalInMinutes": 5
+    // },
+
+    "visual": {
+    "progressBar": "accent"
+    },
+    "installBehavior": {
+
+        // 便携式安装包的安装目录
+        // portablePackageUserRoot 设置会影响在 User 范围内安装包的默认根目录。 
+        // 此设置仅适用于具有 portable 安装程序类型的包。
+        // 以全局安装的方式安装
+        "portablePackageUserRoot":"C:/Program Files/Packages/Portable",
+
+        // 安装范围: user or machine
+        // scope 设置为 machine 有些会出错, 不行再单独重装
+        "preferences": {
+            "scope": "machine",
+            "locale":  ["zh-CN", "en-US"],
+            "architectures": ["x64", "x86"],
+            "installerTypes": ["msix", "msi", "exe", "msstore", "zip"],
+        }
+    },
+    "downloadBehavior": {
+        "defaultDownloadDirectory": "%USERPROFILE%/Downloads"
+    }
+}
