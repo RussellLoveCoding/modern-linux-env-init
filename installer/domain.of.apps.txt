@@ -1,0 +1,670 @@
+======================
+Group: co_workspace_anywhere
+请检查相关URL的域名是否有伪造
+-------
+APPID: mannually-termux, 域名列表:
+
+-------
+APPID: mannually-foldersync, 域名列表:
+
+-------
+APPID: mannually-clouddrive, 域名列表:
+
+-------
+APPID: apps, 域名列表:
+
+
+======================
+Group: netdisk
+请检查相关URL的域名是否有伪造
+-------
+APPID: Alist.Alist, 域名列表:
+    - https://alist.nn.ci
+    - https://github.com
+
+-------
+APPID: Microsoft.OneDrive, 域名列表:
+    - https://oneclient.sfx.ms
+    - https://privacy.microsoft.com
+    - https://support.microsoft.com
+    - https://www.microsoft.com
+
+-------
+APPID: Baidu.BaiduNetdisk, 域名列表:
+    - https://issuepcdn.baidupcs.com
+    - https://pan.baidu.com
+    - https://www.baidu.com
+
+-------
+APPID: Alibaba.aDrive, 域名列表:
+    - https://cdn.aliyundrive.net
+    - https://terms.alicdn.com
+    - https://www.aliyundrive.com
+
+-------
+APPID: manually-clouddrive, 域名列表:
+
+-------
+APPID: 115.115Chrome, 域名列表:
+    - https://115.com
+    - https://down.115.com
+    - https://pc.115.com
+    - https://q.115.com
+    - https://vip.115.com
+
+-------
+APPID: Synology.DriveClient, 域名列表:
+    - https://global.synologydownload.com
+    - https://kb.synology.com
+    - https://www.synology.com
+
+-------
+APPID: Synology.Assistant, 域名列表:
+    - https://global.synologydownload.com
+    - https://kb.synology.com
+    - https://www.synology.com
+
+-------
+APPID: Synology.ActiveBackupForBusinessAgent, 域名列表:
+    - https://global.synologydownload.com
+    - https://kb.synology.com
+    - https://www.synology.com
+
+-------
+APPID: manually-Synology Hyper Backup Explorer, 域名列表:
+
+-------
+APPID: manually-Synology Active Backup for Business 还原媒体建立工具, 域名列表:
+
+-------
+APPID: manually-Synology Active Backup for Business 还原向导, 域名列表:
+
+-------
+APPID: manually-Synology Cloud Sync Decryption Tool, 域名列表:
+
+-------
+APPID: manually-Synology Storage Console for Windows, 域名列表:
+
+-------
+APPID: manually-resilio, 域名列表:
+
+-------
+APPID: manually-goodsync, 域名列表:
+
+-------
+APPID: manually-foldersync, 域名列表:
+
+-------
+APPID: mannualy-android-foldersync-clouddrive2-rcx, 域名列表:
+
+
+======================
+Group: co_workspace_anywhere_apps
+请检查相关URL的域名是否有伪造
+-------
+APPID: appmakes.Typora, 域名列表:
+    - https://download2.typoraio.cn
+    - https://store.typora.io
+    - https://support.typoraio.cn
+    - https://typora.io
+    - https://typoraio.cn
+
+-------
+APPID: Obsidian.Obsidian, 域名列表:
+    - https://github.com
+    - https://help.obsidian.md
+    - https://obsidian.md
+
+-------
+APPID: Joplin.Joplin, 域名列表:
+    - https://github.com
+    - https://joplinapp.org
+    - https://raw.githubusercontent.com
+
+-------
+APPID: GauzyTech.NeatReader, 域名列表:
+    - https://neat-reader-app-release.oss-cn-beijing.aliyuncs.com
+    - https://www.neat-reader.cn
+    - https://www.neat-reader.com
+
+-------
+APPID: mannually-9WZDNCRFHWQT, 域名列表:
+
+-------
+APPID: 9NBLGGH67WLK, 域名列表:
+
+-------
+APPID: 9WZDNCRDJXP4, 域名列表:
+
+-------
+APPID: manually-weread, 域名列表:
+
+-------
+APPID: Kingsoft.WPSOffice, 域名列表:
+    - https://help.wps.com
+    - https://wdl1.pcfg.cache.wpscdn.com
+    - https://www.wps.com
+
+-------
+APPID: manually-microsoft-office, 域名列表:
+
+-------
+APPID: NetEase.MailMaster, 域名列表:
+    - https://dashi.163.com
+    - https://maas.mail.163.com
+    - https://reg.163.com
+    - https://v.mail.163.com
+
+-------
+APPID: Parsec.Parsec, 域名列表:
+    - https://builds.parsec.app
+    - https://parsec.app
+    - https://support.parsec.app
+
+-------
+APPID: EuSoft.Eudic, 域名列表:
+    - https://static.frdic.com
+    - https://www.eudic.net
+
+-------
+APPID: xiaoyifang.GoldenDict-ng, 域名列表:
+    - https://github.com
+
+-------
+APPID: noteexpress, 域名列表:
+
+-------
+APPID: ClarivateAnalytics.EndNote, 域名列表:
+    - https://download.endnote.com
+
+-------
+APPID: 9WZDNCRFHWQT, 域名列表:
+
+-------
+APPID: DigitalScholar.Zotero, 域名列表:
+    - https://digitalscholar.org
+    - https://download.zotero.org
+    - https://www.zotero.org
+
+-------
+APPID: Elsevier.MendeleyReferenceManager, 域名列表:
+    - https://p.widencdn.net
+    - https://service.elsevier.com
+    - https://static.mendeley.com
+    - https://www.elsevier.com
+    - https://www.mendeley.com
+
+-------
+APPID: Overleaf, 域名列表:
+
+-------
+APPID: Daum.PotPlayer, 域名列表:
+    - https://potplayer.daum.net
+    - https://t1.daumcdn.net
+
+-------
+APPID: Tencent.QQMusic, 域名列表:
+    - https://dldir1v6.qq.com
+    - https://www.tencent.com
+    - https://y.qq.com
+
+-------
+APPID: NetEase.CloudMusic, 域名列表:
+    - https://d1.music.126.net
+    - https://mp.music.163.com
+    - https://music.163.com
+    - https://st.music.163.com
+
+-------
+APPID: manually-kwmusic, 域名列表:
+
+-------
+APPID: manaully-filmly, 域名列表:
+
+-------
+APPID: manually-emby, 域名列表:
+
+-------
+APPID: manually-powerdvd, 域名列表:
+
+-------
+APPID: manually-edifier-tempohub, 域名列表:
+
+
+======================
+Group: content_maker
+请检查相关URL的域名是否有伪造
+-------
+APPID: NickeManarin.ScreenToGif, 域名列表:
+    - https://github.com
+    - https://raw.githubusercontent.com
+    - https://www.screentogif.com
+
+
+======================
+Group: chat_and_social_media
+请检查相关URL的域名是否有伪造
+-------
+APPID: Tencent.WeChat, 域名列表:
+    - https://dldir1v6.qq.com
+    - https://help.wechat.com
+    - https://weixin.qq.com
+    - https://windows.weixin.qq.com
+    - https://www.tencent.com
+
+-------
+APPID: Tencent.TIM, 域名列表:
+    - https://dldir1v6.qq.com
+    - https://sqimg.qq.com
+    - https://ti.qq.com
+    - https://tim.qq.com
+    - https://vip.qq.com
+    - https://www.tencent.com
+
+-------
+APPID: Telegram.TelegramDesktop, 域名列表:
+    - https://desktop.telegram.org
+    - https://github.com
+    - https://raw.githubusercontent.com
+    - https://telegram.org
+
+-------
+APPID: manually-RevokeMsgPatcher, 域名列表:
+
+
+======================
+Group: ai_assitant
+请检查相关URL的域名是否有伪造
+-------
+APPID: ByteDance.Doubao, 域名列表:
+    - https://lf-flow-web-cdn.doubao.com
+    - https://www.doubao.com
+
+-------
+APPID: manually-通义千问, 域名列表:
+
+-------
+APPID: manually-github-copilot, 域名列表:
+
+
+======================
+Group: browsers
+请检查相关URL的域名是否有伪造
+-------
+APPID: Mozilla.Firefox, 域名列表:
+    - https://download-installer.cdn.mozilla.net
+    - https://support.mozilla.org
+    - https://www.mozilla.org
+
+-------
+APPID: Google.Chrome, 域名列表:
+    - https://chromestatus.com
+    - https://chromewebstore.google.com
+    - https://developer.chrome.com
+    - https://dl.google.com
+    - https://policies.google.com
+    - https://support.google.com
+    - https://www.google.com
+
+-------
+APPID: Microsoft.Edge, 域名列表:
+    - https://msedge.sf.dl.delivery.mp.microsoft.com
+    - https://privacy.microsoft.com
+    - https://support.microsoft.com
+    - https://www.microsoft.com
+
+
+======================
+Group: networking
+请检查相关URL的域名是否有伪造
+-------
+APPID: 2dust.v2rayN, 域名列表:
+    - https://github.com
+
+-------
+APPID: ClashVergeRev.ClashVergeRev, 域名列表:
+    - https://github.com
+
+-------
+APPID: Youqu.ToDesk, 域名列表:
+    - https://dl.todesk.com
+    - https://update.todesk.com
+    - https://www.todesk.com
+
+-------
+APPID: Parsec.Parsec, 域名列表:
+    - https://builds.parsec.app
+    - https://parsec.app
+    - https://support.parsec.app
+
+-------
+APPID: LizardByte.Sunshine, 域名列表:
+    - https://app.lizardbyte.dev
+    - https://github.com
+
+-------
+APPID: mannually-gameviewer, 域名列表:
+
+-------
+APPID: ZeroTier.ZeroTierOne, 域名列表:
+    - https://docs.zerotier.com
+    - https://github.com
+    - https://www.zerotier.com
+    - https://zerotier.atlassian.net
+
+
+======================
+Group: security
+请检查相关URL的域名是否有伪造
+-------
+APPID: Bitwarden.Bitwarden, 域名列表:
+    - https://bitwarden.com
+    - https://github.com
+
+-------
+APPID: XPDNH1FMW7NB40, 域名列表:
+
+-------
+APPID: KeePassXCTeam.KeePassXC, 域名列表:
+    - https://github.com
+    - https://keepassxc.org
+
+
+======================
+Group: apperance_beautify
+请检查相关URL的域名是否有伪造
+-------
+APPID: MacType.MacType, 域名列表:
+    - https://github.com
+
+
+======================
+Group: powertoys
+请检查相关URL的域名是否有伪造
+-------
+APPID: Eassos.DiskGenius, 域名列表:
+    - https://download2.eassos.com
+    - https://www.diskgenius.cn
+    - https://www.diskgenius.com
+    - https://www.eassos.cn
+
+-------
+APPID: Microsoft.Sysinternals.ProcessExplorer, 域名列表:
+    - https://docs.microsoft.com
+    - https://learn.microsoft.com
+    - https://live.sysinternals.com
+    - https://privacy.microsoft.com
+    - https://support.microsoft.com
+    - https://www.microsoft.com
+
+-------
+APPID: gsass1.NTop, 域名列表:
+    - https://github.com
+
+-------
+APPID: 9NTXGKQ8P7N0, 域名列表:
+
+-------
+APPID: MilosParipovic.OneCommander, 域名列表:
+    - https://onecommander.com
+
+-------
+APPID: UderzoSoftware.SpaceSniffer, 域名列表:
+    - https://downloads.sourceforge.net
+
+-------
+APPID: xanderfrangos.twinkletray, 域名列表:
+    - https://github.com
+    - https://raw.githubusercontent.com
+    - https://twinkletray.com
+
+-------
+APPID: manually-Piriform.CCleaner, 域名列表:
+
+-------
+APPID: manually-TrafficMonitor, 域名列表:
+
+-------
+APPID: voidtools.Everything, 域名列表:
+    - https://www.voidtools.com
+
+-------
+APPID: Microsoft.PowerToys, 域名列表:
+    - https://github.com
+    - https://privacy.microsoft.com
+
+-------
+APPID: PixPin.PixPin, 域名列表:
+    - https://download.pixpinapp.com
+    - https://pixpinapp.com
+    - https://txc.qq.com
+
+-------
+APPID: AntibodySoftware.WizTree, 域名列表:
+    - https://antibody-software.com
+    - https://diskanalyzer.com
+
+-------
+APPID: Tencent.WeType, 域名列表:
+    - https://download.z.weixin.qq.com
+    - https://wetype.wxqcloud.qq.com
+    - https://www.tencent.com
+    - https://z.weixin.qq.com
+
+-------
+APPID: Sogou.SogouInput, 域名列表:
+    - https://ime.gtimg.com
+    - https://pinyin.sogou.com
+    - https://rule.tencent.com
+    - https://shurufa.sogou.com
+
+-------
+APPID: Yuanli.uTools, 域名列表:
+    - https://open.u-tools.cn
+    - https://res.u-tools.cn
+    - https://u.tools
+
+-------
+APPID: 7zip.7zip, 域名列表:
+    - https://7-zip.org
+    - https://github.com
+    - https://sparanoid.com
+
+-------
+APPID: hluk.CopyQ, 域名列表:
+    - https://github.com
+
+-------
+APPID: agalwood.Motrix, 域名列表:
+    - https://github.com
+    - https://motrix.app
+    - https://raw.githubusercontent.com
+
+-------
+APPID: JGraph.Draw, 域名列表:
+    - https://github.com
+    - https://www.diagrams.net
+
+-------
+APPID: AutoHotkey.AutoHotkey, 域名列表:
+    - https://github.com
+    - https://www.autohotkey.com
+
+-------
+APPID: 9PFN5K6QXT46, 域名列表:
+
+-------
+APPID: LiErHeXun.Quicker, 域名列表:
+    - https://download.getquicker.net
+    - https://getquicker.net
+
+-------
+APPID: mykeymap, 域名列表:
+
+
+======================
+Group: healthy_life
+请检查相关URL的域名是否有伪造
+-------
+APPID: https://musclewiki.com/, 域名列表:
+
+
+======================
+Group: audio_video_tech
+请检查相关URL的域名是否有伪造
+-------
+APPID: Gyan.FFmpeg, 域名列表:
+    - https://ffmpeg.org
+    - https://github.com
+    - https://raw.githubusercontent.com
+    - https://www.ffmpeg.org
+    - https://www.gyan.dev
+
+-------
+APPID: manually-Alternative-A2DP-Driver, 域名列表:
+
+-------
+APPID: 9N0866FS04W8, 域名列表:
+
+-------
+APPID: 9n4wgh0z6vhq, 域名列表:
+
+-------
+APPID: 9NMZLZ57R3T7, 域名列表:
+
+-------
+APPID: 9pltg1lwphlf, 域名列表:
+
+-------
+APPID: 9nvjqjbdkn97, 域名列表:
+
+
+======================
+Group: devtoys
+请检查相关URL的域名是否有伪造
+-------
+APPID: Microsoft.VisualStudioCode, 域名列表:
+    - https://code.visualstudio.com
+    - https://privacy.microsoft.com
+    - https://vscode.download.prss.microsoft.com
+    - https://www.microsoft.com
+
+-------
+APPID: manually-vscode-gitlens-pro, 域名列表:
+
+-------
+APPID: Neovim.Neovim, 域名列表:
+    - https://github.com
+    - https://neovim.io
+
+-------
+APPID: Git.Git, 域名列表:
+    - https://gitforwindows.org
+    - https://github.com
+    - https://raw.githubusercontent.com
+
+-------
+APPID: Cygwin.Cygwin, 域名列表:
+    - https://cygwin.com
+    - https://www.cygwin.com
+
+-------
+APPID: WinSCP.WinSCP, 域名列表:
+    - https://sourceforge.net
+    - https://winscp.net
+
+-------
+APPID: Microsoft.WindowsTerminal, 域名列表:
+    - https://docs.microsoft.com
+    - https://github.com
+    - https://privacy.microsoft.com
+    - https://www.microsoft.com
+
+-------
+APPID: Chocolatey.Chocolatey, 域名列表:
+    - https://ch0.co
+    - https://chocolatey.org
+    - https://github.com
+
+-------
+APPID: JFLarvoire.Ag, 域名列表:
+    - https://github.com
+
+-------
+APPID: voidtools.Everything.Cli, 域名列表:
+    - https://voidtools.com
+    - https://www.voidtools.com
+
+-------
+APPID: Genymobile.scrcpy, 域名列表:
+    - https://github.com
+    - https://raw.githubusercontent.com
+
+-------
+APPID: Google.PlatformTools, 域名列表:
+    - https://android.googlesource.com
+    - https://developer.android.com
+    - https://dl.google.com
+    - https://policies.google.com
+
+-------
+APPID: Python.Python.3.13, 域名列表:
+    - https://docs.python.org
+    - https://www.python.org
+
+-------
+APPID: IPIP.BestTrace, 域名列表:
+    - https://cdn.ipip.net
+    - https://www.ipip.net
+
+-------
+APPID: DevToys-app.DevToys, 域名列表:
+    - https://devtoys.app
+    - https://github.com
+
+-------
+APPID: manually-Axosoft.GitKraken, 域名列表:
+
+-------
+APPID: manually-Telerik.Fiddler.Everywhere, 域名列表:
+
+-------
+APPID: manually-Termius.Termius, 域名列表:
+
+-------
+APPID: manually-PremiumSoft.NavicatPremium, 域名列表:
+
+-------
+APPID: manually-Nexttrace, 域名列表:
+
+-------
+APPID: Postman.Postman, 域名列表:
+    - https://dl.pstmn.io
+    - https://learning.postman.com
+    - https://www.postman.com
+
+-------
+APPID: JetBrains.PyCharm.Professional, 域名列表:
+    - https://download.jetbrains.com
+    - https://www.jetbrains.com
+    - https://youtrack.jetbrains.com
+
+-------
+APPID: JetBrains.IntelliJIDEA.Ultimate, 域名列表:
+    - https://download.jetbrains.com
+    - https://www.jetbrains.com
+    - https://youtrack.jetbrains.com
+
+
+======================
+Group: dependencies
+请检查相关URL的域名是否有伪造
+-------
+APPID: OpenJS.NodeJS, 域名列表:
+    - https://github.com
+    - https://nodejs.org
+    - https://openjsf.org
+    - https://privacy-policy.openjsf.org
+    - https://trademark-policy.openjsf.org
+
+

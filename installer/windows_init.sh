@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # set -x
 set -e
-source ./windows_apps_list_ori.sh
+source ./windows_apps.sh
 
 # 请用 admin 模式执行以下命令
 # set_profile() {
@@ -88,42 +88,26 @@ source ./windows_apps_list_ori.sh
 
 check_package_domain() {
 
-    [ ! -d /tmp/winget-pkgs ] && git clone https://github.com/microsoft/winget-pkgs.git /tmp/winget-pkgs
-
-    # 遍历每个组并打印其中的 appid
-    subdirs=()
 
     for group in "${apps_groups[@]}"; do
-        echo "================"
+        echo "======================"
         echo "Group: $group"
         eval "apps=(\"\${${group}[@]}\")"
+        echo '请检查相关URL的域名是否有伪造'
         for appid in "${apps[@]}"; do
 
             # Collect unique subdirs
-            echo "    - $appid"
-            echo '域名列表,请检查域名是否有伪造'
-            domain=``
-
+            echo '-------'
+            echo "APPID: $appid, 域名列表:"
+            winget show --id "$appid" --exact --source winget | \grep -Eoi 'https://[a-zA-Z0-9.-]+' | sort | uniq | sed -rn 's~(.*)~    - \1~g;/.*/p'
+            echo
         done
         echo
     done
 
-    # 去重
-    subdirs=($(printf "%s\n" "${subdirs[@]}" | sort -u))
-
-    # Loop through unique subdirs and run commands
-    for subdir in "${subdirs[@]}"; do
-        echo '-----------------'
-        echo "subdir: $subdir"
-        echo
-        ag PackageUrl /tmp/winget-pkgs/manifests/${subdir} --nofilename --nonumbers | \grep -Eoi 'https://[a-zA-Z0-9.-]+' | sort | uniq
-        echo
-    done
-
-    # rm -rf /tmp/winget-pkgs
 }
 
-winget_install_packages_from_community() {
+setup_before_anything_from_community() {
 
     # 支持中文
     tee -a $HOME/.bashrc >/dev/null <<EOT
@@ -169,6 +153,7 @@ install_tencent_app() {
     winget install --id Tencent.QQMusic --accept-package-agreements --accept-source-agreements --exact --source winget --silent  --disable-interactivity
 }
 
+
 # 需要安装好 cygwin 后 管理员权限下运行
 # 小鹤双拼, 开启 微软拼音的小鹤双拼
 # install_double_pinyin_for_ms_pinyin() {
@@ -185,5 +170,8 @@ install_tencent_app() {
 
 #     Start-Process regedit.exe -ArgumentList "/s $HOME\tmp\xhup.reg" -Wait
 # }
+
+
+
 
 check_package_domain

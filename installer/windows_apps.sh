@@ -222,7 +222,7 @@ powertoys=(
     # 办公效率
     "Yuanli.uTools"                                 # 桌面级的工作流超级工具，按Alt+空格，连接 AI, 搜索引擎, 本地应用打开, 本地文件搜索.
     "7zip.7zip"                                     # 开源解压缩软件，支持多种格式, 平替 winrar
-    "copyQ"                                         # 剪贴板工具
+    "hluk.CopyQ"                                    # 剪贴板工具
     "agalwood.Motrix"                               # 开源免费下载工具: 简单 小而美 但足够强大和全能，如此谬赞只因为现在的应用都在拼命卖广告割韭菜.
     "JGraph.Draw"                                   # draw.io 本地版.画图工具，开源免费强大，对于制作 PPT 的流程图 示意图绰绰有余, 无需登录，无广告，无流氓行为
 
@@ -232,6 +232,7 @@ powertoys=(
     "LiErHeXun.Quicker"                             # 同上, 点点点, 无需记住命令，鼠标点就完了。
     "mykeymap"                                      # 基于 autohotkey, 经过仔细优化工作实际场景，来通过 GUI 的方式定义键盘映射，用键盘控制鼠标，符合国人需求, 中文界面 # https://xianyukang.com/MyKeymap.html # https://github.com/xianyukang/MyKeymap/releases/latest https://www.bilibili.com/video/BV1Sf4y1c7p8/?vd_source=4e89d319f42525ba93509e5455cb1cbf
     # wgestures                                     # 同上 鼠标手势 https://www.yingdev.com/projects/wgestures2
+ 
 )
 
 # 健康与健身
@@ -278,6 +279,7 @@ devtoys=(
     # "Postman.Postman"                               # Web API 开发必备
     "JetBrains.PyCharm.Professional"                # JB 的 pycharm, 强大 IDE
     "JetBrains.IntelliJIDEA.Ultimate"               # JB 的 java IDE
+    "GitHub.cli"                                    # github cli
 )
 
 # 依赖
@@ -285,8 +287,8 @@ dependencies=(
     "OpenJS.NodeJS"                                 
 )
 
-# apps_groups=("co_workspace_anywhere" "netdisk" "co_workspace_anywhere_apps" "content_maker" "chat_and_social_media" "ai_assitant" "browsers" "networking" "security" "apperance_beautify" "powertoys" "healthy_life" "audio_video_tech" "devtoys" "dependencies" )
-apps_groups=("powertoys")
+apps_groups=("co_workspace_anywhere" "netdisk" "co_workspace_anywhere_apps" "content_maker" "chat_and_social_media" "ai_assitant" "browsers" "networking" "security" "apperance_beautify" "powertoys" "healthy_life" "audio_video_tech" "devtoys" "dependencies" )
+# apps_groups=("powertoys")
 
 # 遍历每个组并打印其中的 appid
 # for group in "${apps_groups[@]}"; do
