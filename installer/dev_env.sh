@@ -128,7 +128,7 @@ installPythonByPyenv() {
     # install latest python version
     echoContent green " -----> installing dependencies for pyenv to install python"
     $upgrade 1>/dev/null
-    ${installType} libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev 1>/dev/null
+    ${installType} libsqlite3-dev liblzma-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libssl-dev libbz2-dev libncurses5-dev libffi-dev libreadline-dev libsqlite3-dev liblzma-dev 1>/dev/null
     $installType python3-pip 1>/dev/null 2>&1
     pip install --upgrade pip 1>/dev/null 2>&1
 

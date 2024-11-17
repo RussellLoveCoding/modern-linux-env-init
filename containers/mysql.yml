@@ -1,0 +1,25 @@
+# 部署在群晖上
+version: '3'
+services:
+  mysql-test:
+    image: mysql:8.0
+    restart: always
+    container_name: mysql_container
+    hostname: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: 111111
+      TZ: Asia/Shanghai
+      MYSQL_DATABASE: avdb
+      MYSQL_USER: hin
+      MYSQL_PASSWORD: 111111
+    ports:
+      - 3306:3306
+    volumes:
+      - /volume1/docker/mysql/log/mysqld.log:/var/log/mysqld.log
+      - /volume1/docker/mysql/my.cnf:/etc/mysql/my.cnf
+      - /volume2/AppData/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent localhost:3306 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3

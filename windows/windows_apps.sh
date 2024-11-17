@@ -2,46 +2,18 @@
 
 set -e
 
+# 以下所有注释的格式是  "appid" # 描述 # 备注, 方便处理成表格
+# 描述不适合太长
+
 # 无缝 随身 协同 办公
 # 云空间, 设备互联, 有缝协同
-# co_workspace_anywhere=(
+co_workspace_anywhere=(
+    "manually-猫头鹰文件"                           # 国产多端网盘(支持国内网盘和少部分国外网盘)聚合文件管理+同步软件 # 收费
+    "manually-termux"                              # 安卓设备的终端模拟器
+    "manually-foldersync"                          # 多端文件夹同步软件,还可以进行 本地<->远端(国外网盘,webdav)同步
+    "manually-clouddrive"                          # 所有设备, 需要考虑网络安全问题(http 裸奔, 在不受信任的网络里裸奔)
 
-    # 核心是多端设备上同步共享存储空间，再通过一致或近似的应用来使用(或者网页应用), 现在的飞书、语雀、microsoft 365 等各种平台都是这样的。
-    # 可选是自建或者采用商业版或者开源全家桶。
-
-    # 连接至 Windows
-    # 1. 文件无缝传输及使用, 如同在本地文件夹一样。# 感觉是挂载的技术
-    # 2. 互相使用远程桌面. # scrpry, 连接至 windows, Telescale VPN+scrcpy
-    # 3. 显示屏共享. 手机投屏到电脑上。自带的跨屏互联
-    # 4. 网络协同. 热点。这不是挺简单的事情吗
-    # 5. 基础应用数据实时同步.
-    # 在 office 办公场景和文件使用上，仿佛忘了是两台设备。
-    # 电脑的大屏可以用来丝滑作为手机的扩展屏。
-
-    # 应用.(数据同步、备份、web应用、多端app), 先解决开放式的工作同步和备份的问题。
-    # 需求如下:
-        # - 通信(一个微信几乎秒杀全部,所以这里的需求不需要很大，只需要定期备份即可): 联系人、通话记录、邮件、短信;
-        # - 办公基础: 日历(outlook)、Todo(待办)、便笺(印象笔记/语雀/有道云, 轻度使用足够了, 重要的规划用 markdown+git/百度云盘同步, 手机也没法编那么多的笔记)
-        # - 影音: 录音(百度网盘,音频备份), 相册(各种各样的, 百度网盘 备份文件夹).
-        # - 安全与私密: 私密保险箱、录音、密码本
-        # - 其他: 录音
-
-    # 解决方案：
-    # 1. 手机厂商的全家桶. 不支持导出，深绑定，云空间贵。
-    # 2. 系统厂商的全家桶, windows, google. google 国内不好用, 微软的好点，但没那么全
-    # 3. 第三方的，保证要收费。
-    # 4. 自己换了全套的其他应用。折腾。
-    # 5. 百度网盘 针对文件夹粒度的同步，以及使用本地存储的跨平台应用(最好能够加密数据,避免他人看见). 
-        # - 手机端则通过 GoodSync+Webdav 实现数据同步
-
-    # 猫头鹰文件
-    # "mannually-termux"                              # 安卓设备
-    # "mannually-foldersync"                          # 安卓设备, windows 设备
-    # "mannually-clouddrive"                          # 所有设备, 需要考虑网络安全问题(http 裸奔, 在不受信任的网络里裸奔)
-    # "apps"                                          # 存储方式开放的所有应用, 如音乐, markdown, 
-
-    # 支持 webdav 的跨平台应用比较少，开源的多，因为商业模式注定没有多少开发者投钱，除非背靠大厂。
-# )
+)
 
 
 # workspace anywhere 中的 共享存储
@@ -49,8 +21,8 @@ set -e
 netdisk=(
     # 网络存储层,同步层,备份层
 
-    #"Alist.Alist"                                   # 支持国内外众多网盘的挂载并以 webdav 提供服务
-    # "Microsoft.OneDrive"                          # 对于工作区数据和其他所有重要数据,是一个十分完美的跨平台同步应用,独一档或者独二档的存在, 在国内致命的缺点是目前 还没找到合作商提供个人存储服务,世纪互联的商业版太贵,教育版缩水且无法挂载,便宜管饱的无国内备案的国际版个人服务域名被墙.
+    #"Alist.Alist"                                  # 支持国内外众多网盘的挂载并以 webdav 提供服务
+    # "Microsoft.OneDrive"                          # 十分完美的跨平台同步应用(双向同步 冲突解决 支持文件历史版本 提醒 无缝融合Windows使用),国内除世纪互联外难以使用
     "Baidu.BaiduNetdisk" 							# 百度网盘: 功能丰富 量大管饱, 支持10设备登录,支持双向增量同步, 三方支持不友好. 适合工作数据
     "Alibaba.aDrive" 							    # 阿里网盘: 功能相对不丰富,对于工作党最重要的功能没有:提供文件历史版本的双向增量同步功能，svip量大管饱,10设备; 加钱后三方支持友好. 可以安装各种折腾应用，不过最大1T流量。
     "manually-clouddrive"                          # 网盘聚合再挂载到无感的本地文件夹,webdav,自动备份任务,秒传,自动加密解密,流媒体播放
@@ -74,7 +46,7 @@ netdisk=(
     "manually-resilio"                              # 无服务器 P2P 多设备同步一个文件夹会像bittorrent一样. 具有 Onedrive 的同步功能和分享功能, (文件占位符)释放/保留/. 官网:https://www.resilio.com/sync/, 参考教程文章: https://linux.do/t/topic/186892
     "manually-goodsync"                             # p2p sync, anywhere <-> anywhere 实际上电脑内部就可以. 经过测试在公网内从云端到手机安卓，走的是小水管服务器. 融合多个存储平台，统一管理，并在这些存储的基础上，建立一个含有版本控制等功能的同步空间。 P2P 链接. 跨平台. pro 版收费, 用例 https://linux.do/t/topic/186169
     "manually-foldersync"                           # 安卓 <=> 云端. folder sync, 跟 goodsync 有些类似，但是没有版本控制等等。
-    "mannualy-android-foldersync-clouddrive2-rcx"   # 联合提供文件同步服务.
+    "manualy-android-foldersync-clouddrive2-rcx"   # 联合提供文件同步服务.
         # - 任意一边如果是空文件夹同步会出错, 不同步删除操作.
         # - foldersync 配合 goodsync 使用, 定期 diff 一下
 )
@@ -99,7 +71,7 @@ co_workspace_anywhere_apps=(
     # 阅读
     # reading
     # "GauzyTech.NeatReader"                          # 电子书阅读, 如 mobi, epub
-    "mannually-9WZDNCRFHWQT"                        # Drawboard, 免费的沉浸式 pdf 阅读手写笔记器, 以前收费现在阶梯收费,使用老版本的滑还是有足够的手写功能. 配置可通过账号同步
+    "manually-9WZDNCRFHWQT"                        # Drawboard, 免费的沉浸式 pdf 阅读手写笔记器, 以前收费现在阶梯收费,使用老版本的滑还是有足够的手写功能. 配置可通过账号同步
     # "9NBLGGH67WLK"                                  # pdf reader, 挺丝滑,额头大, PDF Reader - View and Edit PDF
     # "9WZDNCRDJXP4"                                  # 比较丝滑的 pdf 阅读编辑器，就是额头有点大
     "manually-weread"                               # https://weread.qq.com/微信阅读, 跨平台优雅
@@ -130,8 +102,12 @@ co_workspace_anywhere_apps=(
     "Daum.PotPlayer"                                # 目前近乎万能的播放器, 新版支持杜比视界, 见帖子汇总:https://v2ex.com/t/1023976
     "Tencent.QQMusic"                               # qq音乐，就是音乐库多, 但是搜到的在线音乐不能播放本地的音源，只能在本地音乐界面播放。
     "NetEase.CloudMusic"                            # 网易云
+    "lyswhut.lx-music-desktop"                      # 一款开源的音乐播放器, 支持自定义音源. 风格简洁, 歌曲元数据齐全洛雪音乐播放器, .
+    "maotoumao.MusicFree"                           # 跟 lx-music 有点类似, 但是功能更加完善, 同样跨平台, 支持 webdav 同步配置 同步歌单.
+    "manually-BBDown"                               #
     "manually-kwmusic"                              # 酷我音乐下载歌曲
-    # "filmly"                                        # 不支持windows, 跨平台 https://filmly.163.com/
+    # "filmly"                                      # 不支持windows, 跨平台 https://filmly.163.com/
+    "XBMCFoundation.Kodi"                           # 开源 强大的跨平台多媒体播放器, 能够刮削
     "manually-emby"                                 # emby client for windows
     "manually-powerdvd"                             # 蓝光播放器
     "manually-edifier-tempohub"                     # 漫步者耳机电脑软件
@@ -179,14 +155,14 @@ networking=(
     "Youqu.ToDesk"                                  # 远程桌面, 修电脑, 更好的内网穿透链接要收费
     "Parsec.Parsec"                                 # 串流远程桌面, 丝滑, 打游戏
     "LizardByte.Sunshine"                           # 串流工具
-    "mannually-gameviewer"                          # 网易出的串流工具
+    "manually-gameviewer"                          # 网易出的串流工具
     # "ZeroTier.ZeroTierOne"                          # 用于建立虚拟局域网，方便远程 RDP 或者是同步软件同步数据
 )
 
 # 安全
 security=(
     "Bitwarden.Bitwarden"                           # 密码即服务
-    "XPDNH1FMW7NB40"                                # huorong 火绒安全软件,告别360,功能强大全方位防护,无广告,不弹窗,不流氓,无全家桶捆绑
+    "msstore-XPDNH1FMW7NB40"                        # huorong 火绒安全软件,告别360,功能强大全方位防护,无广告,不弹窗,不流氓,无全家桶捆绑
     "KeePassXCTeam.KeePassXC"                       # 无服务端的 密码软件，可以通过同步软件同步到云端, bitwarden 有的功能都有了，就是界面没那么好看
 )
 
@@ -198,16 +174,18 @@ apperance_beautify=(
 # 系统工具与瑞士军刀效率琐碎玩意
 powertoys=(
     # 系统工具
-    "Eassos.DiskGenius"                             # 磁盘工具
+    # "Eassos.DiskGenius"                             # 磁盘工具
     "Microsoft.Sysinternals.ProcessExplorer"        # 升级版专业版的任务管理器
     "gsass1.NTop"                                   # 命令行的任务管理器
+    "ALCPU.CoreTemp"                                # CPU 监控
     # "Win10Debloat"
-    "9NTXGKQ8P7N0"                                  # Cross Device Experience, 链接手机
+    "msstore-9NTXGKQ8P7N0"                          # Cross Device Experience, 链接手机
     "MilosParipovic.OneCommander"                   # 替代 Windows 自带的文件管理器, 高性能, 多选项卡, 多列布局(macos finder), 双窗格对照, 正则重命名等等
     "UderzoSoftware.SpaceSniffer"                   # 可视化 磁盘空间管理，C盘快满了, 怎么办呢
     "xanderfrangos.twinkletray"                     # 外接屏可以通过 Windows 来调整亮度, 将两者调整为同步亮度, 再打开 笔记本的自动调整亮度，完美。
     "manually-Piriform.CCleaner"                    # 清理注册表，文件查重
     "manually-TrafficMonitor"                       # 监控 cpu/gpu/网络等 usage, 温控信息, 置于任务栏中  # "https://github.com/zhongyang219/TrafficMonitor/releases/latest"
+
 
 
     # 效率玩意
@@ -222,40 +200,41 @@ powertoys=(
     # 办公效率
     "Yuanli.uTools"                                 # 桌面级的工作流超级工具，按Alt+空格，连接 AI, 搜索引擎, 本地应用打开, 本地文件搜索.
     "7zip.7zip"                                     # 开源解压缩软件，支持多种格式, 平替 winrar
+    "RARLab.WinRAR"                                 # winrar
     "hluk.CopyQ"                                    # 剪贴板工具
     "agalwood.Motrix"                               # 开源免费下载工具: 简单 小而美 但足够强大和全能，如此谬赞只因为现在的应用都在拼命卖广告割韭菜.
     "JGraph.Draw"                                   # draw.io 本地版.画图工具，开源免费强大，对于制作 PPT 的流程图 示意图绰绰有余, 无需登录，无广告，无流氓行为
 
     "AutoHotkey.AutoHotkey"                         # 自动化重复按键操作
     # 按键精灵
-    "9PFN5K6QXT46"                                  # onequick 自动化 Windows 的动作< 整理成高层任务式子命令
+    "msstore-9PFN5K6QXT46"                          # onequick 自动化 Windows 的动作< 整理成高层任务式子命令
     "LiErHeXun.Quicker"                             # 同上, 点点点, 无需记住命令，鼠标点就完了。
-    "mykeymap"                                      # 基于 autohotkey, 经过仔细优化工作实际场景，来通过 GUI 的方式定义键盘映射，用键盘控制鼠标，符合国人需求, 中文界面 # https://xianyukang.com/MyKeymap.html # https://github.com/xianyukang/MyKeymap/releases/latest https://www.bilibili.com/video/BV1Sf4y1c7p8/?vd_source=4e89d319f42525ba93509e5455cb1cbf
+    "manually-mykeymap"                                      # 基于 autohotkey, 经过仔细优化工作实际场景，来通过 GUI 的方式定义键盘映射，用键盘控制鼠标，符合国人需求, 中文界面 # https://xianyukang.com/MyKeymap.html # https://github.com/xianyukang/MyKeymap/releases/latest https://www.bilibili.com/video/BV1Sf4y1c7p8/?vd_source=4e89d319f42525ba93509e5455cb1cbf
     # wgestures                                     # 同上 鼠标手势 https://www.yingdev.com/projects/wgestures2
  
 )
 
 # 健康与健身
 healthy_life=(
-    "https://musclewiki.com/"                       # web 应用
+    "manually-https://musclewiki.com/"                       # web 应用
 )
 
 # 影音技术
 audio_video_tech=(
     "Gyan.FFmpeg"                                     # 音视频编码和转码，非常强大
     "manually-Alternative-A2DP-Driver"                # windows 目前不支持 蓝牙高码率音频输出，安装该驱动可达到 双通道 24bit 96khz 采样, https://www.bluetoothgoodies.com/a2dp/
-    # "9N0866FS04W8"                                  # Dolby Access, 淘宝 10块钱的杜比音效/视界激活码
-    # "9n4wgh0z6vhq"                                  # hevc 8k 视频解码包,笔记本已经装好 来自设备制造商的视频扩展 hevc HEVC Video Extensions from Device Manufacturer, https://apps.microsoft.com/detail/9n4wgh0z6vhq?ocid=pdpshare&hl=en-us&gl=US
-    # "9NMZLZ57R3T7"                                  # hevc 视频扩展 https://www.microsoft.com/store/productId/9NMZLZ57R3T7?ocid=pdpshare
-    # "9pltg1lwphlf"                                  # Dolby Vision Extensions https://apps.microsoft.com/detail/9pltg1lwphlf?ocid=libraryshare&hl=en-us&gl=US
-    # "9nvjqjbdkn97"                                  # Dolby Digital Plus decoder for PC OEMs  https://apps.microsoft.com/detail/9nvjqjbdkn97?ocid=libraryshare&hl=en-us&gl=US
+    # "msstore-9N0866FS04W8"                                  # Dolby Access, 淘宝 10块钱的杜比音效/视界激活码
+    # "msstore-9n4wgh0z6vhq"                                  # hevc 8k 视频解码包,笔记本已经装好 来自设备制造商的视频扩展 hevc HEVC Video Extensions from Device Manufacturer, https://apps.microsoft.com/detail/9n4wgh0z6vhq?ocid=pdpshare&hl=en-us&gl=US
+    # "msstore-9NMZLZ57R3T7"                                  # hevc 视频扩展 https://www.microsoft.com/store/productId/9NMZLZ57R3T7?ocid=pdpshare
+    # "msstore-9pltg1lwphlf"                                  # Dolby Vision Extensions https://apps.microsoft.com/detail/9pltg1lwphlf?ocid=libraryshare&hl=en-us&gl=US
+    # "msstore-9nvjqjbdkn97"                                  # Dolby Digital Plus decoder for PC OEMs  https://apps.microsoft.com/detail/9nvjqjbdkn97?ocid=libraryshare&hl=en-us&gl=US
 )
 
 # 编程开发
 devtoys=(
     "Microsoft.VisualStudioCode"                    # 微软开发的热门的开源编程IDE
     "manually-vscode-gitlens-pro"                   # https://linux.do/t/topic/181333
-    # "Neovim.Neovim"                                 # 将 vim 搬到 Windows 上用, 用于偶尔的轻编辑, 重活还是让 vscode 和 其他 IDE 来吧
+    "Neovim.Neovim"                                 # 将 vim 搬到 Windows 上用, 用于偶尔的轻编辑, 重活还是让 vscode 和 其他 IDE 来吧
     # "Git.Git"                                       # 版本管理工具
     # "Cygwin.Cygwin"                                 # Windows 上的 unix like 终端, git bash, wsl1, wsl2, cygwin, MSYS2, nushell 讨论:https://cn.v2ex.com/t/1051792, 
     # 重点看看 cygwin, msys2, 用好 gui, shell 就放弃吧, 远程 ssh 处理一下文件就得了,
@@ -287,16 +266,17 @@ dependencies=(
     "OpenJS.NodeJS"                                 
 )
 
-apps_groups=("co_workspace_anywhere" "netdisk" "co_workspace_anywhere_apps" "content_maker" "chat_and_social_media" "ai_assitant" "browsers" "networking" "security" "apperance_beautify" "powertoys" "healthy_life" "audio_video_tech" "devtoys" "dependencies" )
-# apps_groups=("powertoys")
+# 部分 app 需要交互式安装点东西，例如 potplayer 需要安装额外的编解码器
+interactive_install_apps=(
+    "Daum.PotPlayer"                                # 目前近乎万能的播放器, 新版支持杜比视界, 见帖子汇总:https://v2ex.com/t/1023976
+)
 
-# 遍历每个组并打印其中的 appid
-# for group in "${apps_groups[@]}"; do
-#     echo "================"
-#     echo "Group: $group"
-#     eval "apps=(\"\${${group}[@]}\")"
-#     for appid in "${apps[@]}"; do
-#         echo "    - $appid"
-#     done
-#     echo
-# done
+apps_groups=("co_workspace_anywhere" "netdisk" "co_workspace_anywhere_apps" "content_maker" "chat_and_social_media" "ai_assitant" "browsers" "networking" "security" "apperance_beautify" "powertoys" "healthy_life" "audio_video_tech" "devtoys" "dependencies" )
+# apps_groups=("content_maker")
+# apps_groups=("co_workspace_anywhere")
+# apps_groups=("netdisk")
+# apps_groups=("co_workspace_anywhere_apps")
+# apps_groups=("chat_and_social_media")
+# apps_groups=("ai_assitant")
+# apps_groups=("browsers" "networking" "security")
+# apps_groups=("apperance_beautify" "powertoys" "healthy_life" "audio_video_tech" "devtoys" "dependencies" )

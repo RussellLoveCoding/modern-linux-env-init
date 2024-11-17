@@ -35,10 +35,10 @@ co_workspace_anywhere=(
         # - 手机端则通过 GoodSync+Webdav 实现数据同步
 
     # 猫头鹰文件
-    "mannually-termux"                              # 安卓设备
-    "mannually-foldersync"                          # 安卓设备, windows 设备
-    "mannually-clouddrive"                          # 所有设备, 需要考虑网络安全问题(http 裸奔, 在不受信任的网络里裸奔)
-    "apps"                                          # 存储方式开放的所有应用, 如音乐, markdown, 
+    "mannually-termux"                              # 安卓 终端模拟器和 Linux 环境应用. 基于它可以跑 ssh, 运行一些软件服务 做一些比较有趣的事情等等，当然缺少 linux 完整内核，也就没法运行例如 docker  之类的应用
+    "mannually-foldersync"                          # 云端文件夹/本地文件夹 <-> 本地文件夹 间的同步。国外应用，因此国内网盘不支持，但可以通过 https webdav 曲线救国, 或者 root 手机使用 clouddrive2 挂载到本地. 收费. 请自行到淘宝登平台购买.
+    "mannually-clouddrive"                          # 全平台支持,但是安卓手机无 root 权限不能够挂载，而且 webdav 服务是 http, 在不收信任的网络中有风险。
+    "apps"                                          # 存储方式开放的所有应用, 如音乐, markdown,
 
     # 支持 webdav 的跨平台应用比较少，开源的多，因为商业模式注定没有多少开发者投钱，除非背靠大厂。
 )
@@ -49,12 +49,12 @@ co_workspace_anywhere=(
 netdisk=(
     # 网络存储层,同步层,备份层
 
-    "Alist.Alist"                                   # 支持国内外众多网盘的挂载并以 webdav 提供服务
-    "Microsoft.OneDrive"                          # 对于工作区数据和其他所有重要数据,是一个十分完美的跨平台同步应用,独一档或者独二档的存在, 在国内致命的缺点是目前 还没找到合作商提供个人存储服务,世纪互联的商业版太贵,教育版缩水且无法挂载,便宜管饱的无国内备案的国际版个人服务域名被墙.
+    "Alist.Alist"                                   # Alist.支持国内外众多网盘的挂载并以 webdav 提供服务, 同时提供索引搜索, 增删改查, 流媒体点播登基本功能。
+    "Microsoft.OneDrive"                            # Onedrive.对于工作区数据和其他所有重要数据,是一个十分完美的跨平台同步应用,独一档或者独二档的存在, 在国内致命的缺点是目前 还没找到合作商提供个人存储服务,世纪互联的商业版太贵,教育版缩水且无法挂载,便宜管饱的无国内备案的国际版个人服务域名被墙.
     "Baidu.BaiduNetdisk" 							# 百度网盘: 功能丰富 量大管饱, 支持10设备登录,支持双向增量同步, 三方支持不友好. 适合工作数据
     "Alibaba.aDrive" 							    # 阿里网盘: 功能相对不丰富,对于工作党最重要的功能没有:提供文件历史版本的双向增量同步功能，svip量大管饱,10设备; 加钱后三方支持友好. 可以安装各种折腾应用，不过最大1T流量。
-    "manually-clouddrive"                          # 网盘聚合再挂载到无感的本地文件夹,webdav,自动备份任务,秒传,自动加密解密,流媒体播放
-    "115.115Chrome"                                 # 115 网盘, 做加密备份盘和中转盘
+    "manually-clouddrive"                           # 网盘聚合工具和文件管理工具：网盘聚合再挂载到无感的本地文件夹,支持webdav,自动备份任务,秒传,自动加密解密,流媒体播放
+    "115.115Chrome"                                 # 115 网盘, 国内磁力无线的龙头, 适合做加密备份盘和中转盘
 
     # nas 的备份客户端
     "Synology.DriveClient"                          # 群晖的文件夹双向增量同步工具,支持历史版本. 像是 Onerive 的备份同步工具
@@ -201,6 +201,7 @@ powertoys=(
     "Eassos.DiskGenius"                             # 磁盘工具
     "Microsoft.Sysinternals.ProcessExplorer"        # 升级版专业版的任务管理器
     "gsass1.NTop"                                   # 命令行的任务管理器
+    "ALCPU.CoreTemp"                                # CPU 监控
     # "Win10Debloat"
     "9NTXGKQ8P7N0"                                  # Cross Device Experience, 链接手机
     "MilosParipovic.OneCommander"                   # 替代 Windows 自带的文件管理器, 高性能, 多选项卡, 多列布局(macos finder), 双窗格对照, 正则重命名等等

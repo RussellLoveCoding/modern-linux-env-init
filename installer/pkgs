@@ -2,7 +2,7 @@
 pkgsKeys="aria2 atop autoconf autojump axel colordiff crontab curl dstat gcc git htop \
 httpie iftop inetutils-ping iotop jq lsof make man ncdu net-tools nodejs p7zip qrencode \
 ranger rar rename silversearcher-ag sqlite3 sudo telnet tldr tmux tree unzip vim wget yarn \
-ssh_client ssh_server lsb-release"
+ssh_client ssh_server lsb-release nfs-common"
 
 #获取值
 # echo${pkgsDict["key1"]}#输出"value1"

@@ -6,6 +6,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 
+# 支持中文
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+
 # If you come from bash you might have to change your $PATH.
 
 # Path to your oh-my-zsh installation.
